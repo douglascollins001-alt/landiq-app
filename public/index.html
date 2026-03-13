@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LandIQ — UK Property Intelligence</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAh25unbP8IoDOUWpsF_n8VptIB8mG_cew&libraries=places,geometry&callback=initGoogleMaps" async defer></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -239,7 +238,7 @@ tr.tot td{border-top:1px solid var(--bdr2);font-weight:700;background:rgba(0,0,0
 
       <!-- Center: map -->
       <div class="map-center">
-        <div id="leaflet-map" style="width:100%;height:100%"></div>
+        <div id="google-map" style="width:100%;height:100%"></div>
         <!-- Legend -->
         <div style="position:absolute;bottom:30px;left:12px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--r2);padding:8px 12px;display:flex;gap:12px;align-items:center;z-index:1000">
           <span style="width:10px;height:10px;border-radius:50%;background:#3498db;display:inline-block"></span><span style="font-size:10px;color:var(--t3)">Commercial</span>
@@ -506,44 +505,181 @@ const scoreColor = s => s >= 85 ? '#2ecc9b' : s >= 70 ? '#f5a623' : '#e74c3c';
 const typeColor = t => ({ commercial: '#3498db', residential: '#2ecc9b', land: '#f5a623', industrial: '#9b59b6' })[t] || '#8fa3b1';
 
 // ── MAP / PROPERTIES ──────────────────────────────────────────────
-let leafletMap = null;
-let leafletMarkers = [];
+let gMap = null;
+let gMarkers = [];
+let gInfoWindow = null;
+let titleBoundaryLayer = null;
+let planningLayer = null;
+let floodLayer = null;
+let propertiesLoaded = false;
+
+// Called by Google Maps script once loaded
+function initGoogleMaps() {
+  gMap = new google.maps.Map(document.getElementById('google-map'), {
+    center: { lat: 54.5, lng: -2.5 },
+    zoom: 6,
+    mapTypeId: 'roadmap',
+    styles: [
+      { elementType:'geometry', stylers:[{color:'#0d1b2a'}] },
+      { elementType:'labels.text.stroke', stylers:[{color:'#0d1b2a'}] },
+      { elementType:'labels.text.fill', stylers:[{color:'#8fa3b1'}] },
+      { featureType:'administrative', elementType:'geometry', stylers:[{color:'#1a2d40'}] },
+      { featureType:'administrative.country', elementType:'labels.text.fill', stylers:[{color:'#9b9bff'}] },
+      { featureType:'administrative.locality', elementType:'labels.text.fill', stylers:[{color:'#bdbdd7'}] },
+      { featureType:'poi', elementType:'labels.text.fill', stylers:[{color:'#757575'}] },
+      { featureType:'poi.park', elementType:'geometry', stylers:[{color:'#0f2a1e'}] },
+      { featureType:'poi.park', elementType:'labels.text.fill', stylers:[{color:'#6b9a76'}] },
+      { featureType:'road', elementType:'geometry', stylers:[{color:'#1a2d40'}] },
+      { featureType:'road', elementType:'geometry.stroke', stylers:[{color:'#212a37'}] },
+      { featureType:'road', elementType:'labels.text.fill', stylers:[{color:'#9ca5b3'}] },
+      { featureType:'road.highway', elementType:'geometry', stylers:[{color:'#1e3050'}] },
+      { featureType:'road.highway', elementType:'geometry.stroke', stylers:[{color:'#1f2835'}] },
+      { featureType:'road.highway', elementType:'labels.text.fill', stylers:[{color:'#f3d19c'}] },
+      { featureType:'transit', elementType:'geometry', stylers:[{color:'#2f3948'}] },
+      { featureType:'transit.station', elementType:'labels.text.fill', stylers:[{color:'#d59563'}] },
+      { featureType:'water', elementType:'geometry', stylers:[{color:'#0a1929'}] },
+      { featureType:'water', elementType:'labels.text.fill', stylers:[{color:'#515c6d'}] },
+      { featureType:'water', elementType:'labels.text.stroke', stylers:[{color:'#0a1929'}] },
+    ],
+    mapTypeControl: true,
+    mapTypeControlOptions: { style: google.maps.MapTypeControlStyle.DROPDOWN_MENU, mapTypeIds: ['roadmap','satellite','hybrid','terrain'] },
+    streetViewControl: true,
+    fullscreenControl: true,
+    zoomControl: true,
+  });
+
+  gInfoWindow = new google.maps.InfoWindow();
+
+  // Add search box
+  const searchInput = document.createElement('input');
+  searchInput.placeholder = 'Search UK address or postcode…';
+  searchInput.style.cssText = 'margin:10px;padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:#152235;color:#e8ecf0;font-size:13px;width:280px;outline:none;font-family:inherit';
+  gMap.controls[google.maps.ControlPosition.TOP_LEFT].push(searchInput);
+  const autocomplete = new google.maps.places.Autocomplete(searchInput, { componentRestrictions: { country: 'gb' } });
+  autocomplete.bindTo('bounds', gMap);
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (place.geometry) { gMap.setCenter(place.geometry.location); gMap.setZoom(15); }
+  });
+
+  // Layer toggle buttons
+  const layerDiv = document.createElement('div');
+  layerDiv.style.cssText = 'margin:10px;display:flex;flex-direction:column;gap:5px';
+  [
+    ['🏠 Title Boundaries', toggleTitleBoundaries],
+    ['📋 Planning', togglePlanningLayer],
+    ['🌊 Flood Risk', toggleFloodLayer],
+  ].forEach(([label, fn]) => {
+    const btn = document.createElement('button');
+    btn.textContent = label;
+    btn.style.cssText = 'padding:6px 12px;background:#152235;border:1px solid rgba(255,255,255,.2);border-radius:6px;color:#e8ecf0;font-size:11px;cursor:pointer;font-weight:600;text-align:left;font-family:inherit';
+    btn.onclick = () => { fn(btn); };
+    layerDiv.appendChild(btn);
+  });
+  gMap.controls[google.maps.ControlPosition.RIGHT_TOP].push(layerDiv);
+
+  // Load properties once map ready
+  if (propertiesLoaded) renderGooglePins(properties);
+}
 
 async function loadProperties() {
   try {
     const res = await fetch('/api/properties');
     properties = await res.json();
+    propertiesLoaded = true;
     renderPropList(properties);
-    initLeafletMap(properties);
+    if (gMap) renderGooglePins(properties);
   } catch(e) { console.error('Failed to load properties', e); }
 }
 
-function initLeafletMap(props) {
-  if (leafletMap) { renderLeafletPins(props); return; }
-  leafletMap = L.map('leaflet-map', { zoomControl: true, attributionControl: true }).setView([54.5, -2.5], 6);
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 19
-  }).addTo(leafletMap);
-  renderLeafletPins(props);
-  // Fix map size after render
-  setTimeout(() => leafletMap.invalidateSize(), 100);
-}
-
-function renderLeafletPins(props) {
-  leafletMarkers.forEach(m => leafletMap.removeLayer(m));
-  leafletMarkers = [];
+function renderGooglePins(props) {
+  gMarkers.forEach(m => m.setMap(null));
+  gMarkers = [];
   props.filter(p => p.lat && p.lng).forEach(p => {
     const col = typeColor(p.type);
-    const icon = L.divIcon({
-      className: '',
-      html: `<div style="background:${col};width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4)">${p.score}</div>`,
-      iconSize: [32, 32], iconAnchor: [16, 16]
+    const marker = new google.maps.Marker({
+      position: { lat: p.lat, lng: p.lng },
+      map: gMap,
+      title: p.title,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        fillColor: col, fillOpacity: 0.9,
+        strokeColor: '#ffffff', strokeWeight: 2,
+        scale: selectedProp && selectedProp.id === p.id ? 16 : 11,
+      },
+      label: { text: String(p.score), color: '#fff', fontSize: '10px', fontWeight: '700' },
+      zIndex: selectedProp && selectedProp.id === p.id ? 999 : 1,
     });
-    const marker = L.marker([p.lat, p.lng], { icon }).addTo(leafletMap);
-    marker.on('click', () => selectProp(p.id));
-    marker.bindTooltip(`<b>${p.title}</b><br>${p.address}<br>${fmtK(p.price)}`, { direction: 'top', offset: [0, -16] });
-    leafletMarkers.push(marker);
+    marker.addListener('click', () => selectProp(p.id));
+    gMarkers.push(marker);
   });
+}
+
+function toggleTitleBoundaries(btn) {
+  if (titleBoundaryLayer) {
+    titleBoundaryLayer.setMap(null); titleBoundaryLayer = null;
+    btn.style.borderColor = 'rgba(255,255,255,.2)'; btn.style.color = '#e8ecf0';
+    return;
+  }
+  btn.style.borderColor = '#2ecc9b'; btn.style.color = '#2ecc9b';
+  // HMLR WMS title boundaries (free, no key needed)
+  titleBoundaryLayer = new google.maps.ImageMapType({
+    getTileUrl: (coord, zoom) => {
+      const proj = gMap.getProjection();
+      const zfactor = Math.pow(2, zoom);
+      const top = proj.fromPointToLatLng(new google.maps.Point(coord.x * 256 / zfactor, coord.y * 256 / zfactor));
+      const bot = proj.fromPointToLatLng(new google.maps.Point((coord.x+1) * 256 / zfactor, (coord.y+1) * 256 / zfactor));
+      const bbox = `${top.lng()},${bot.lat()},${bot.lng()},${top.lat()}`;
+      return `https://use-land-property-data.service.gov.uk/mapping/wms?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetMap&LAYERS=inspire&STYLES=default&SRS=EPSG:4326&BBOX=${bbox}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true`;
+    },
+    tileSize: new google.maps.Size(256, 256), name: 'Title Boundaries', maxZoom: 20, minZoom: 0, opacity: 0.7,
+  });
+  gMap.overlayMapTypes.push(titleBoundaryLayer);
+}
+
+function togglePlanningLayer(btn) {
+  if (planningLayer) {
+    planningLayer.setMap(null); planningLayer = null;
+    btn.style.borderColor = 'rgba(255,255,255,.2)'; btn.style.color = '#e8ecf0';
+    return;
+  }
+  btn.style.borderColor = '#f5a623'; btn.style.color = '#f5a623';
+  // OS Planning constraints WMS (free via OS Data Hub)
+  planningLayer = new google.maps.ImageMapType({
+    getTileUrl: (coord, zoom) => {
+      const proj = gMap.getProjection();
+      const zfactor = Math.pow(2, zoom);
+      const top = proj.fromPointToLatLng(new google.maps.Point(coord.x * 256 / zfactor, coord.y * 256 / zfactor));
+      const bot = proj.fromPointToLatLng(new google.maps.Point((coord.x+1) * 256 / zfactor, (coord.y+1) * 256 / zfactor));
+      const bbox = `${top.lng()},${bot.lat()},${bot.lng()},${top.lat()}`;
+      return `https://environment.data.gov.uk/planning/ogc/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=Planning-Constraints&CRS=CRS:84&BBOX=${bot.lat()},${top.lng()},${top.lat()},${bot.lng()}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&STYLES=`;
+    },
+    tileSize: new google.maps.Size(256, 256), name: 'Planning', maxZoom: 20, minZoom: 0, opacity: 0.6,
+  });
+  gMap.overlayMapTypes.push(planningLayer);
+}
+
+function toggleFloodLayer(btn) {
+  if (floodLayer) {
+    floodLayer.setMap(null); floodLayer = null;
+    btn.style.borderColor = 'rgba(255,255,255,.2)'; btn.style.color = '#e8ecf0';
+    return;
+  }
+  btn.style.borderColor = '#3498db'; btn.style.color = '#3498db';
+  // Environment Agency Flood Risk WMS (completely free)
+  floodLayer = new google.maps.ImageMapType({
+    getTileUrl: (coord, zoom) => {
+      const proj = gMap.getProjection();
+      const zfactor = Math.pow(2, zoom);
+      const top = proj.fromPointToLatLng(new google.maps.Point(coord.x * 256 / zfactor, coord.y * 256 / zfactor));
+      const bot = proj.fromPointToLatLng(new google.maps.Point((coord.x+1) * 256 / zfactor, (coord.y+1) * 256 / zfactor));
+      const xmin = Math.min(top.lng(), bot.lng()), ymin = Math.min(top.lat(), bot.lat());
+      const xmax = Math.max(top.lng(), bot.lng()), ymax = Math.max(top.lat(), bot.lat());
+      return `https://environment.data.gov.uk/spatialdata/flood-risk-zones-flood-zone-2/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=Flood_Risk_Zones_-_Flood_Zone_2&CRS=CRS:84&BBOX=${ymin},${xmin},${ymax},${xmax}&WIDTH=256&HEIGHT=256&FORMAT=image/png&TRANSPARENT=true&STYLES=`;
+    },
+    tileSize: new google.maps.Size(256, 256), name: 'Flood Risk', maxZoom: 20, minZoom: 0, opacity: 0.5,
+  });
+  gMap.overlayMapTypes.push(floodLayer);
 }
 
 function filterProps(q) {
@@ -554,7 +690,7 @@ function filterProps(q) {
     return p.title.toLowerCase().includes(qL) || p.address.toLowerCase().includes(qL) || p.postcode.toLowerCase().includes(qL) || (p.titleNum||'').toLowerCase().includes(qL);
   });
   renderPropList(filtered);
-  renderLeafletPins(filtered);
+  if (gMap) renderGooglePins(filtered);
 }
 
 function toggleChip(el) {
@@ -590,9 +726,12 @@ function renderPropList(props) {
 async function selectProp(id) {
   selectedProp = properties.find(p => p.id === id);
   renderPropList(properties.filter(p => activeFilters.has(p.type)));
-  renderLeafletPins(properties.filter(p => activeFilters.has(p.type)));
-  if (selectedProp && selectedProp.lat && leafletMap) {
-    leafletMap.setView([selectedProp.lat, selectedProp.lng], 14, { animate: true });
+  if (gMap) {
+    renderGooglePins(properties.filter(p => activeFilters.has(p.type)));
+    if (selectedProp && selectedProp.lat) {
+      gMap.panTo({ lat: selectedProp.lat, lng: selectedProp.lng });
+      gMap.setZoom(15);
+    }
   }
   renderDetail(selectedProp, 'title');
 }
