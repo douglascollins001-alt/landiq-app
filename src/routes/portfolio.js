@@ -1,25 +1,14 @@
 const express = require('express');
-const { all, run } = require('../db/database');
-
+const { getCollection, setCollection } = require('../lib/store');
 const router = express.Router();
 
-router.get('/', async (_req, res) => {
-  const rows = await all('SELECT * FROM portfolio_assets ORDER BY id DESC');
-  res.json(rows);
-});
-
-router.post('/', async (req, res) => {
-  const { name, asset_type, price, yield_percent, ltv, status } = req.body;
-  const result = await run(
-    'INSERT INTO portfolio_assets (name, asset_type, price, yield_percent, ltv, status) VALUES (?, ?, ?, ?, ?, ?)',
-    [name, asset_type, price, yield_percent, ltv, status]
-  );
-  res.json({ id: result.lastID, ...req.body });
-});
-
-router.delete('/:id', async (req, res) => {
-  await run('DELETE FROM portfolio_assets WHERE id = ?', [req.params.id]);
-  res.json({ ok: true });
+router.get('/', (_req, res) => res.json(getCollection('portfolio')));
+router.post('/', (req, res) => {
+  const items = getCollection('portfolio');
+  const item = { id: `asset-${Date.now()}`, ...req.body };
+  items.unshift(item);
+  setCollection('portfolio', items);
+  res.status(201).json(item);
 });
 
 module.exports = router;

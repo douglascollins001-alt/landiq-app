@@ -5,313 +5,151 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LandIQ</title>
   <style>
-    :root { --bg:#0f172a; --panel:#111827; --soft:#1f2937; --text:#e5e7eb; --muted:#9ca3af; --line:#374151; --accent:#facc15; }
-    * { box-sizing:border-box; }
-    body { margin:0; font-family:Inter, Arial, sans-serif; background:#020617; color:var(--text); }
-    header { padding:18px 24px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(2,6,23,.92); backdrop-filter: blur(10px); z-index:10; }
-    nav { display:flex; gap:18px; flex-wrap:wrap; }
-    nav a { color:var(--muted); text-decoration:none; font-weight:600; }
-    nav a:hover { color:var(--accent); }
-    .container { padding:24px; display:grid; gap:20px; }
-    .grid { display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:20px; }
-    .panel { background:var(--panel); border:1px solid var(--line); border-radius:18px; padding:18px; box-shadow:0 12px 30px rgba(0,0,0,.25); }
-    .panel h2, .panel h3 { margin-top:0; }
-    .muted { color:var(--muted); }
-    .listing-card { border:1px solid var(--line); border-radius:14px; padding:14px; margin-bottom:12px; background:rgba(255,255,255,.02); }
-    .pill { display:inline-block; padding:4px 10px; border-radius:999px; background:#27272a; color:#fde68a; font-size:12px; margin-right:6px; }
-    button, .button { background:var(--accent); color:#111827; font-weight:700; border:0; border-radius:10px; padding:10px 14px; cursor:pointer; }
-    button.secondary { background:#1f2937; color:var(--text); border:1px solid var(--line); }
-    input, select, textarea { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:#0b1220; color:var(--text); }
-    .row { display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-bottom:12px; }
-    .actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
-    pre { white-space:pre-wrap; word-break:break-word; background:#020617; padding:12px; border-radius:12px; border:1px solid var(--line); }
-    table { width:100%; border-collapse:collapse; }
-    th, td { text-align:left; padding:8px; border-bottom:1px solid var(--line); font-size:14px; }
-    .two-col { display:grid; grid-template-columns: 1.2fr .8fr; gap:20px; }
-    @media (max-width: 900px) { .two-col { grid-template-columns: 1fr; } }
+    body { font-family: Arial, sans-serif; margin: 0; background: #0d1021; color: #fff; }
+    header { padding: 20px 24px; border-bottom: 1px solid #2d3150; }
+    main { display: grid; grid-template-columns: 1.2fr 1fr 1fr; gap: 16px; padding: 16px; }
+    .card { background: #151935; border: 1px solid #2d3150; border-radius: 12px; padding: 16px; }
+    h1, h2, h3 { margin-top: 0; }
+    button { background: #f2c94c; color: #000; border: none; border-radius: 8px; padding: 10px 12px; cursor: pointer; font-weight: 700; }
+    input, textarea, select { width: 100%; padding: 10px; margin: 6px 0 10px; border-radius: 8px; border: 1px solid #3d4268; background: #0f1330; color: #fff; }
+    .listing { border-top: 1px solid #2d3150; padding: 12px 0; }
+    .muted { color: #b7bdd8; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pill { display: inline-block; background: #23284d; padding: 4px 8px; border-radius: 999px; font-size: 12px; }
+    pre { white-space: pre-wrap; background: #0f1330; padding: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
   <header>
-    <nav>
-      <a href="#map">Map</a>
-      <a href="#listings">Listings</a>
-      <a href="#portfolio">Portfolio</a>
-      <a href="#dcf">Investment DCF</a>
-      <a href="#dev">Dev Appraisal</a>
-      <a href="#pipeline">Pipeline</a>
-    </nav>
+    <h1>LandIQ</h1>
+    <div class="muted">Listings now originate from uploaded PDFs and can be run through Investment DCF or Development Appraisal.</div>
   </header>
-
-  <div class="container">
-    <section id="map" class="panel">
-      <h2>Map</h2>
-      <p class="muted">Kept intentionally simple. The key update is that Listings now originate from uploaded PDFs, not a separate listing feed.</p>
+  <main>
+    <section class="card">
+      <h2>Uploaded Deals</h2>
+      <input type="file" id="fileInput" accept=".pdf,.txt" />
+      <button onclick="uploadFile()">Upload PDF / Text OM</button>
+      <div id="uploadStatus" class="muted" style="margin-top:10px"></div>
+      <div id="listings"></div>
     </section>
 
-    <section id="listings" class="panel">
-      <h2>Listings</h2>
-      <p class="muted">Drop a brochure / OM PDF. LandIQ extracts salient information and creates a deal listing you can send into the investment or development model.</p>
-      <form id="uploadForm">
-        <div class="row">
-          <div>
-            <label for="dealFile">Deal PDF / text</label>
-            <input id="dealFile" name="dealFile" type="file" accept=".pdf,.txt,.md" required />
-          </div>
-          <div style="display:flex;align-items:end;">
-            <button type="submit">Upload and Create Listing</button>
-          </div>
-        </div>
-      </form>
-      <div class="two-col">
-        <div>
-          <div id="listingsContainer"></div>
-        </div>
-        <div class="panel" style="padding:16px;">
-          <h3>Selected Listing</h3>
-          <div id="selectedListing" class="muted">Click any generated listing to view extracted details.</div>
-        </div>
-      </div>
+    <section class="card">
+      <h2>Investment DCF</h2>
+      <label>Purchase Price</label><input id="purchasePrice" type="number" />
+      <label>NOI</label><input id="noi" type="number" />
+      <label>Growth Rate</label><input id="growthRate" type="number" step="0.001" value="0.03" />
+      <label>Exit Yield</label><input id="exitYield" type="number" step="0.001" value="0.055" />
+      <label>Hold Years</label><input id="holdYears" type="number" value="5" />
+      <label>Discount Rate</label><input id="discountRate" type="number" step="0.001" value="0.08" />
+      <button onclick="runDcf()">Run Investment Model</button>
+      <pre id="dcfOutput"></pre>
     </section>
 
-    <div class="grid">
-      <section id="portfolio" class="panel">
-        <h2>Portfolio</h2>
-        <div id="portfolioTable"></div>
-      </section>
-
-      <section id="pipeline" class="panel">
-        <h2>Pipeline</h2>
-        <div id="pipelineTable"></div>
-      </section>
-    </div>
-
-    <div class="grid">
-      <section id="dcf" class="panel">
-        <h2>Investment DCF</h2>
-        <div class="row">
-          <div><label>Property<input id="dcf_property" /></label></div>
-          <div><label>Purchase Price (£)<input id="dcf_purchasePrice" type="number" /></label></div>
-          <div><label>Year 1 NOI (£)<input id="dcf_year1Noi" type="number" /></label></div>
-          <div><label>Hold (yrs)<input id="dcf_holdYears" type="number" value="5" /></label></div>
-          <div><label>NOI Growth (%)<input id="dcf_noiGrowth" type="number" value="2.5" step="0.1" /></label></div>
-          <div><label>SDLT (%)<input id="dcf_sdlt" type="number" value="5" step="0.1" /></label></div>
-          <div><label>Other Costs (%)<input id="dcf_otherCosts" type="number" value="1.5" step="0.1" /></label></div>
-          <div><label>Entry Cap (%)<input id="dcf_entryCap" type="number" value="6" step="0.1" /></label></div>
-          <div><label>Exit Cap (%)<input id="dcf_exitCap" type="number" value="6.5" step="0.1" /></label></div>
-          <div><label>Selling Costs (%)<input id="dcf_sellingCosts" type="number" value="1.5" step="0.1" /></label></div>
-          <div><label>LTV (%)<input id="dcf_ltv" type="number" value="60" step="0.1" /></label></div>
-          <div><label>Rate (%)<input id="dcf_rate" type="number" value="5.75" step="0.1" /></label></div>
-          <div><label>Amort. (yrs)<input id="dcf_amortYears" type="number" value="20" /></label></div>
-          <div><label>IO Period (yrs)<input id="dcf_ioPeriod" type="number" value="1" /></label></div>
-          <div><label>Discount Rate (%)<input id="dcf_discountRate" type="number" value="8" step="0.1" /></label></div>
-        </div>
-        <div class="actions"><button onclick="runDcf()">Run Model</button></div>
-        <div id="dcfResult" class="muted" style="margin-top:12px;">Enter inputs and click Run Model.</div>
-      </section>
-
-      <section id="dev" class="panel">
-        <h2>Development Appraisal</h2>
-        <div class="row">
-          <div><label>Units<input id="dev_units" type="number" /></label></div>
-          <div><label>Avg Unit Price (£)<input id="dev_avgUnitPrice" type="number" /></label></div>
-          <div><label>GDV Residential (£)<input id="dev_gdvResidential" type="number" /></label></div>
-          <div><label>NIA (sqft)<input id="dev_nia" type="number" /></label></div>
-          <div><label>Rent (£/sqft/yr)<input id="dev_rent" type="number" /></label></div>
-          <div><label>Cap Rate (%)<input id="dev_capRate" type="number" value="6" step="0.1" /></label></div>
-          <div><label>Build Cost (£/sqft)<input id="dev_buildCostPsf" type="number" value="225" /></label></div>
-          <div><label>Res NIA (sqft)<input id="dev_resNia" type="number" /></label></div>
-          <div><label>Contingency (%)<input id="dev_contingency" type="number" value="5" step="0.1" /></label></div>
-          <div><label>Prof Fees (%)<input id="dev_profFees" type="number" value="10" step="0.1" /></label></div>
-          <div><label>Marketing (%)<input id="dev_marketing" type="number" value="1" step="0.1" /></label></div>
-          <div><label>Sale Agent Fee (%)<input id="dev_saleAgentFee" type="number" value="1.5" step="0.1" /></label></div>
-          <div><label>Land Price (£)<input id="dev_landPrice" type="number" /></label></div>
-          <div><label>SDLT (%)<input id="dev_sdlt" type="number" value="5" step="0.1" /></label></div>
-          <div><label>Other Acq (%)<input id="dev_otherAcq" type="number" value="1" step="0.1" /></label></div>
-          <div><label>Build Rate (%)<input id="dev_buildRate" type="number" value="8" step="0.1" /></label></div>
-          <div><label>Build Period (mths)<input id="dev_buildPeriodMonths" type="number" value="12" /></label></div>
-          <div><label>Sales Period (mths)<input id="dev_salesPeriodMonths" type="number" value="6" /></label></div>
-          <div><label>Target Profit on Cost (%)<input id="dev_targetProfitOnCost" type="number" value="20" step="0.1" /></label></div>
-        </div>
-        <div class="actions"><button onclick="runDev()">Run Appraisal</button></div>
-        <div id="devResult" class="muted" style="margin-top:12px;">Enter inputs and click Run Appraisal.</div>
-      </section>
-    </div>
-  </div>
+    <section class="card">
+      <h2>Development Appraisal</h2>
+      <label>Land Price</label><input id="landPrice" type="number" />
+      <label>Build Cost</label><input id="buildCost" type="number" />
+      <label>Fees</label><input id="fees" type="number" />
+      <label>Finance</label><input id="finance" type="number" />
+      <label>Contingency</label><input id="contingency" type="number" />
+      <label>GDV</label><input id="gdv" type="number" />
+      <button onclick="runDev()">Run Development Appraisal</button>
+      <pre id="devOutput"></pre>
+    </section>
+  </main>
 
   <script>
-    let listings = [];
-    let selected = null;
-
-    function gbp(value) {
-      if (value == null || value === '') return '—';
-      return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(Number(value));
-    }
-
-    function pct(value) {
-      if (value == null || value === '') return '—';
-      return `${Number(value).toFixed(2)}%`;
-    }
-
-    async function getJson(url, options) {
+    async function fetchJson(url, options) {
       const response = await fetch(url, options);
-      if (!response.ok) throw new Error(await response.text());
-      return response.json();
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.error || 'Request failed');
+      return data;
     }
 
-    function renderListings() {
-      const container = document.getElementById('listingsContainer');
-      if (!listings.length) {
-        container.innerHTML = '<p class="muted">No uploaded deal listings yet.</p>';
-        return;
-      }
-      container.innerHTML = listings.map((item) => `
-        <div class="listing-card">
-          <div style="display:flex;justify-content:space-between;gap:8px;align-items:start;">
-            <div>
-              <h3 style="margin:0 0 8px 0;">${item.title}</h3>
-              <div class="muted">${item.summary || ''}</div>
-            </div>
-            <span class="pill">${item.classification}</span>
+    function formatMoney(value) {
+      return typeof value === 'number' && !Number.isNaN(value)
+        ? new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', maximumFractionDigits: 0 }).format(value)
+        : '—';
+    }
+
+    function prefillDcf(listing) {
+      document.getElementById('purchasePrice').value = listing.price || '';
+      document.getElementById('noi').value = listing.extractedFields.noi || '';
+    }
+
+    function prefillDev(listing) {
+      document.getElementById('landPrice').value = listing.price || '';
+      document.getElementById('gdv').value = listing.extractedFields.gdv || '';
+    }
+
+    async function loadListings() {
+      const listings = await fetchJson('/api/listings');
+      const root = document.getElementById('listings');
+      root.innerHTML = listings.map((listing) => `
+        <div class="listing">
+          <h3>${listing.title}</h3>
+          <div class="row">
+            <span class="pill">${listing.classification}</span>
+            <span class="pill">${listing.assetType || 'Unclassified asset'}</span>
           </div>
-          <div style="margin:10px 0;">${(item.highlights || []).map((h) => `<span class="pill">${h}</span>`).join('')}</div>
-          <div class="actions">
-            <button class="secondary" onclick="selectListing(${item.id})">Open Details</button>
-            <button onclick="loadIntoDcf(${item.id})">Run Investment Model</button>
-            <button onclick="loadIntoDev(${item.id})">Run Development Appraisal</button>
+          <p class="muted">${listing.address || 'Address not found'}</p>
+          <p>${listing.summary || ''}</p>
+          <p><strong>Price:</strong> ${formatMoney(listing.price)} | <strong>Yield:</strong> ${listing.extractedFields.yield || '—'}% | <strong>GDV:</strong> ${formatMoney(listing.extractedFields.gdv)}</p>
+          <div class="row">
+            <button onclick='prefillDcf(${JSON.stringify(listing).replace(/'/g, "&#39;")})'>Run Investment Model</button>
+            <button onclick='prefillDev(${JSON.stringify(listing).replace(/'/g, "&#39;")})'>Run Development Appraisal</button>
           </div>
         </div>
-      `).join('');
+      `).join('') || '<p class="muted">No uploaded deals yet.</p>';
     }
 
-    function renderSelected() {
-      const box = document.getElementById('selectedListing');
-      if (!selected) {
-        box.innerHTML = 'Click any generated listing to view extracted details.';
+    async function uploadFile() {
+      const input = document.getElementById('fileInput');
+      const status = document.getElementById('uploadStatus');
+      if (!input.files.length) {
+        status.textContent = 'Choose a PDF or text OM first.';
         return;
       }
-      box.innerHTML = `
-        <h3>${selected.title}</h3>
-        <p><strong>Source:</strong> ${selected.source_file_name || '—'}</p>
-        <p><strong>Classification:</strong> ${selected.classification}</p>
-        <p><strong>Asset Type:</strong> ${selected.asset_type || '—'}</p>
-        <p><strong>Address:</strong> ${selected.address || '—'}</p>
-        <p><strong>Price:</strong> ${gbp(selected.price)}</p>
-        <p><strong>Yield:</strong> ${pct(selected.yield_percent)}</p>
-        <p><strong>NOI:</strong> ${gbp(selected.noi)}</p>
-        <p><strong>GDV:</strong> ${gbp(selected.gdv)}</p>
-        <p><strong>Units:</strong> ${selected.units || '—'}</p>
-        <p><strong>Planning:</strong> ${selected.planning || '—'}</p>
-        <p><strong>Confidence:</strong> ${pct((selected.confidence_score || 0) * 100)}</p>
-        <p><strong>Risks / Missing:</strong> ${(selected.risks || []).join('; ') || 'None noted'}</p>
-        <pre>${JSON.stringify(selected.extractedFields || {}, null, 2)}</pre>
-      `;
-    }
-
-    async function refreshListings() {
-      listings = await getJson('/api/listings');
-      renderListings();
-      if (selected) {
-        selected = listings.find((x) => x.id === selected.id) || null;
-        renderSelected();
+      const formData = new FormData();
+      formData.append('file', input.files[0]);
+      status.textContent = 'Uploading and extracting...';
+      try {
+        await fetchJson('/api/listings/upload', { method: 'POST', body: formData });
+        status.textContent = 'Upload complete.';
+        input.value = '';
+        await loadListings();
+      } catch (error) {
+        status.textContent = error.message;
       }
-    }
-
-    async function selectListing(id) {
-      selected = await getJson(`/api/listings/${id}`);
-      renderSelected();
-    }
-
-    function setValue(id, value) {
-      const el = document.getElementById(id);
-      if (el && value != null) el.value = value;
-    }
-
-    async function loadIntoDcf(id) {
-      const item = await getJson(`/api/listings/${id}`);
-      selected = item; renderSelected();
-      setValue('dcf_property', item.title);
-      setValue('dcf_purchasePrice', item.price);
-      setValue('dcf_year1Noi', item.noi);
-      setValue('dcf_entryCap', item.yield_percent);
-      window.location.hash = '#dcf';
-    }
-
-    async function loadIntoDev(id) {
-      const item = await getJson(`/api/listings/${id}`);
-      selected = item; renderSelected();
-      setValue('dev_units', item.units);
-      setValue('dev_gdvResidential', item.gdv);
-      setValue('dev_landPrice', item.price);
-      setValue('dev_resNia', item.nia_sqft);
-      setValue('dev_nia', item.nia_sqft);
-      window.location.hash = '#dev';
     }
 
     async function runDcf() {
       const payload = {
-        property: document.getElementById('dcf_property').value,
-        purchasePrice: document.getElementById('dcf_purchasePrice').value,
-        year1Noi: document.getElementById('dcf_year1Noi').value,
-        holdYears: document.getElementById('dcf_holdYears').value,
-        noiGrowth: document.getElementById('dcf_noiGrowth').value,
-        sdlt: document.getElementById('dcf_sdlt').value,
-        otherCosts: document.getElementById('dcf_otherCosts').value,
-        entryCap: document.getElementById('dcf_entryCap').value,
-        exitCap: document.getElementById('dcf_exitCap').value,
-        sellingCosts: document.getElementById('dcf_sellingCosts').value,
-        ltv: document.getElementById('dcf_ltv').value,
-        rate: document.getElementById('dcf_rate').value,
-        amortYears: document.getElementById('dcf_amortYears').value,
-        ioPeriod: document.getElementById('dcf_ioPeriod').value,
-        discountRate: document.getElementById('dcf_discountRate').value
+        purchasePrice: document.getElementById('purchasePrice').value,
+        noi: document.getElementById('noi').value,
+        growthRate: document.getElementById('growthRate').value,
+        exitYield: document.getElementById('exitYield').value,
+        holdYears: document.getElementById('holdYears').value,
+        discountRate: document.getElementById('discountRate').value
       };
-      const result = await getJson('/api/dcf/run', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
-      document.getElementById('dcfResult').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+      const data = await fetchJson('/api/dcf/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      document.getElementById('dcfOutput').textContent = JSON.stringify(data, null, 2);
     }
 
     async function runDev() {
-      const ids = ['units','avgUnitPrice','gdvResidential','nia','rent','capRate','buildCostPsf','resNia','contingency','profFees','marketing','saleAgentFee','landPrice','sdlt','otherAcq','buildRate','buildPeriodMonths','salesPeriodMonths','targetProfitOnCost'];
-      const payload = Object.fromEntries(ids.map((id) => [id, document.getElementById(`dev_${id}`).value]));
-      const result = await getJson('/api/dev-appraisal/run', { method:'POST', headers:{ 'Content-Type':'application/json' }, body: JSON.stringify(payload) });
-      document.getElementById('devResult').innerHTML = `<pre>${JSON.stringify(result, null, 2)}</pre>`;
+      const payload = {
+        landPrice: document.getElementById('landPrice').value,
+        buildCost: document.getElementById('buildCost').value,
+        fees: document.getElementById('fees').value,
+        finance: document.getElementById('finance').value,
+        contingency: document.getElementById('contingency').value,
+        gdv: document.getElementById('gdv').value
+      };
+      const data = await fetchJson('/api/dev-appraisal/run', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      document.getElementById('devOutput').textContent = JSON.stringify(data, null, 2);
     }
 
-    async function loadPortfolio() {
-      const rows = await getJson('/api/portfolio');
-      document.getElementById('portfolioTable').innerHTML = `
-        <table>
-          <thead><tr><th>Asset</th><th>Type</th><th>Price</th><th>Yield</th><th>LTV</th><th>Status</th></tr></thead>
-          <tbody>${rows.map(r => `<tr><td>${r.name}</td><td>${r.asset_type}</td><td>${gbp(r.price)}</td><td>${pct(r.yield_percent)}</td><td>${pct(r.ltv)}</td><td>${r.status}</td></tr>`).join('')}</tbody>
-        </table>`;
-    }
-
-    async function loadPipeline() {
-      const rows = await getJson('/api/pipeline');
-      document.getElementById('pipelineTable').innerHTML = `
-        <table>
-          <thead><tr><th>Deal</th><th>Stage</th><th>Notes</th></tr></thead>
-          <tbody>${rows.map(r => `<tr><td>${r.name}</td><td>${r.stage}</td><td>${r.notes || ''}</td></tr>`).join('')}</tbody>
-        </table>`;
-    }
-
-    document.getElementById('uploadForm').addEventListener('submit', async (event) => {
-      event.preventDefault();
-      const formData = new FormData();
-      const file = document.getElementById('dealFile').files[0];
-      if (!file) return;
-      formData.append('dealFile', file);
-      const created = await getJson('/api/listings/upload', { method: 'POST', body: formData });
-      selected = created;
-      renderSelected();
-      document.getElementById('uploadForm').reset();
-      await refreshListings();
-    });
-
-    Promise.all([refreshListings(), loadPortfolio(), loadPipeline()]).catch((error) => {
-      console.error(error);
-      alert('Failed to load app data.');
-    });
+    loadListings();
   </script>
 </body>
 </html>
