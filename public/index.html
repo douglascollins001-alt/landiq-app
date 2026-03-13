@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LandIQ — UK Property Intelligence</title>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAh25unbP8IoDOUWpsF_n8VptIB8mG_cew&libraries=places,geometry&callback=initGoogleMaps" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAh25unbP8IoDOUWpsF_n8VptIB8mG_cew&libraries=places,geometry" defer></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -491,7 +491,7 @@ function showPage(id, btn) {
   if (id === 'portfolio') loadPortfolio();
   if (id === 'pipeline') loadPipeline();
   if (id === 'listings') loadListings();
-  if (id === 'devapp' && document.getElementById('devapp-main').children.length && document.getElementById('devapp-main').children[0].querySelector) {}
+  if (id === 'map') { tryInitMap(); if (gMap) setTimeout(() => google.maps.event.trigger(gMap, 'resize'), 100); }
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────
@@ -582,14 +582,29 @@ function initGoogleMaps() {
   if (propertiesLoaded) renderGooglePins(properties);
 }
 
+// Also try init when page tab is shown
+function tryInitMap() {
+  if (!gMap && typeof google !== 'undefined' && google.maps && google.maps.Map) {
+    initGoogleMaps();
+  }
+}
+
 async function loadProperties() {
   try {
     const res = await fetch('/api/properties');
     properties = await res.json();
     propertiesLoaded = true;
     renderPropList(properties);
-    if (gMap) renderGooglePins(properties);
+    waitForGoogleMaps();
   } catch(e) { console.error('Failed to load properties', e); }
+}
+
+function waitForGoogleMaps() {
+  if (typeof google !== 'undefined' && google.maps && google.maps.Map) {
+    initGoogleMaps();
+  } else {
+    setTimeout(waitForGoogleMaps, 300);
+  }
 }
 
 function renderGooglePins(props) {
