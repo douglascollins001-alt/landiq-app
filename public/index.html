@@ -1,202 +1,87 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LandIQ — UK Property Intelligence</title>
+<title>LandIQ</title>
+
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --bg:#0d1b2a;--bg2:#152235;--bg3:#1a2d40;--bg4:#1e3050;
-  --accent:#2ecc9b;--accent2:#26b589;--adim:rgba(46,204,155,.13);
-  --amber:#f5a623;--red:#e74c3c;--blue:#3498db;--purple:#9b59b6;
-  --t1:#e8ecf0;--t2:#8fa3b1;--t3:#566b7a;
-  --bdr:rgba(255,255,255,.07);--bdr2:rgba(255,255,255,.14);
-  --r:10px;--r2:6px;
-  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;
-  font-size:14px;color:var(--t1);
+
+body{
+background:#0f172a;
+color:white;
+font-family:system-ui;
+margin:0;
 }
-html,body{height:100%;background:var(--bg);overflow:hidden}
 
-/* ── LAYOUT ─────────────────────────────────────────────────── */
-.app{display:grid;grid-template-rows:52px 1fr;height:100vh}
-.topbar{background:var(--bg2);border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:12px;padding:0 18px;z-index:100}
-.logo{font-size:16px;font-weight:700;display:flex;align-items:center;gap:8px;white-space:nowrap}
-.logo-dot{width:8px;height:8px;background:var(--accent);border-radius:50%;box-shadow:0 0 10px rgba(46,204,155,.5)}
-.nav{display:flex;gap:3px;margin-left:auto}
-.nav-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--bdr2);color:var(--t2);background:transparent;transition:all .2s;font-family:inherit}
-.nav-btn:hover,.nav-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-.content{overflow:hidden;position:relative}
-.page{display:none;height:100%;overflow:hidden}
-.page.active{display:flex}
+header{
+display:flex;
+align-items:center;
+justify-content:space-between;
+padding:20px 30px;
+background:#020617;
+border-bottom:1px solid #1e293b;
+}
 
-/* ── SHARED COMPONENTS ──────────────────────────────────────── */
-.card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);overflow:hidden}
-.card-hdr{padding:11px 15px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.12)}
-.card-title{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--t2)}
-.card-body{padding:15px}
-.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:12px;font-size:10px;font-weight:700}
-.b-green{background:rgba(46,204,155,.15);color:#2ecc9b}
-.b-amber{background:rgba(245,166,35,.15);color:#f5a623}
-.b-red{background:rgba(231,76,60,.15);color:#e74c3c}
-.b-blue{background:rgba(52,152,219,.15);color:#3498db}
-.b-purple{background:rgba(155,89,182,.15);color:#9b59b6}
-.green{color:#2ecc9b}.amber{color:#f5a623}.red{color:#e74c3c}.blue{color:#3498db}
-.mono{font-family:'SF Mono',monospace;font-size:11px}
-.btn{padding:8px 14px;border-radius:var(--r2);font-size:12px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:all .2s}
-.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent2)}
-.btn-outline{background:transparent;border:1px solid var(--bdr2);color:var(--t2)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
-.btn-danger{background:transparent;border:1px solid rgba(231,76,60,.3);color:var(--red)}.btn-danger:hover{background:rgba(231,76,60,.1)}
-.btn-sm{padding:5px 10px;font-size:11px}
-input,select,textarea{background:var(--bg3);border:1px solid var(--bdr2);border-radius:var(--r2);padding:8px 10px;font-size:13px;color:var(--t1);font-family:inherit;outline:none;transition:border-color .15s;width:100%}
-input:focus,select:focus,textarea:focus{border-color:var(--accent)}
-select option{background:var(--bg3)}
-label{display:block;font-size:11px;color:var(--t2);margin-bottom:4px;font-weight:600}
-.field{margin-bottom:12px}
-.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-table{width:100%;border-collapse:collapse;font-size:12px}
-th{text-align:left;font-size:10px;font-weight:700;color:var(--t3);padding:7px 12px;letter-spacing:.3px;background:rgba(0,0,0,.15);white-space:nowrap}
-td{padding:9px 12px;border-bottom:1px solid var(--bdr);font-size:12px;vertical-align:middle}
-tr:last-child td{border-bottom:none}
-tr:hover td{background:rgba(255,255,255,.02);cursor:pointer}
-.scrollable{overflow-y:auto}
+.logo{
+font-size:22px;
+font-weight:600;
+color:#22c55e;
+}
 
-/* ── MAP PAGE ───────────────────────────────────────────────── */
-#page-map{flex-direction:row}
-.map-left{width:310px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
-.map-search{padding:12px;border-bottom:1px solid var(--bdr)}
-.search-wrap{position:relative}
-.search-wrap input{padding-left:32px}
-.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:15px;pointer-events:none}
-.filter-bar{padding:10px 12px;border-bottom:1px solid var(--bdr);display:flex;gap:5px;flex-wrap:wrap}
-.chip{padding:4px 10px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--bdr2);color:var(--t2);background:transparent;transition:all .15s;white-space:nowrap}
-.chip.on{background:var(--adim);border-color:var(--accent);color:var(--accent)}
-.prop-list{flex:1;overflow-y:auto;padding:10px}
-.prop-card{background:var(--bg3);border:1px solid var(--bdr);border-radius:var(--r2);padding:12px;margin-bottom:8px;cursor:pointer;transition:all .2s;position:relative}
-.prop-card:hover,.prop-card.sel{border-color:var(--accent)}
-.prop-card.sel::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);border-radius:var(--r2) 0 0 var(--r2)}
-.prop-name{font-weight:700;font-size:13px;margin-bottom:3px}
-.prop-addr{font-size:11px;color:var(--t3);margin-bottom:8px}
-.prop-tags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:8px}
-.prop-tag{font-size:9px;padding:2px 6px;border-radius:10px;font-weight:700}
-.stat-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:4px}
-.stat-mini{text-align:center;background:rgba(0,0,0,.2);border-radius:4px;padding:5px 4px}
-.stat-v{font-size:12px;font-weight:700;font-family:'SF Mono',monospace}
-.stat-l{font-size:9px;color:var(--t3);margin-top:1px}
-.map-center{flex:1;position:relative;background:#0a1520;overflow:hidden}
-.map-svg{width:100%;height:100%}
-.map-controls{position:absolute;top:12px;right:12px;display:flex;flex-direction:column;gap:6px}
-.map-ctrl-btn{width:32px;height:32px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--r2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--t2);font-size:15px;font-weight:700;transition:all .15s;user-select:none}
-.map-ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
-.map-right{width:330px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--bdr);display:flex;flex-direction:column;overflow:hidden}
-.detail-hero{background:linear-gradient(135deg,var(--bg4) 0%,#0f2a3c 100%);padding:18px;border-bottom:1px solid var(--bdr)}
-.detail-title{font-size:17px;font-weight:700;line-height:1.3;margin-bottom:3px}
-.detail-addr{font-size:11px;color:var(--t2);margin-bottom:14px}
-.score-strip{display:flex;gap:8px}
-.score-box{flex:1;background:rgba(0,0,0,.2);border-radius:var(--r2);padding:9px;text-align:center}
-.score-val{font-size:19px;font-weight:700;font-family:'SF Mono',monospace}
-.score-lbl{font-size:9px;color:var(--t3);margin-top:2px;font-weight:600;letter-spacing:.3px}
-.det-tabs{display:flex;background:var(--bg3)}
-.det-tab{flex:1;padding:9px 6px;font-size:11px;font-weight:600;cursor:pointer;color:var(--t3);border-bottom:2px solid transparent;transition:all .2s;text-align:center;white-space:nowrap}
-.det-tab.active{color:var(--accent);border-bottom-color:var(--accent);background:var(--bg2)}
-.det-body{flex:1;overflow-y:auto;padding:15px}
-.sec-lbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;margin-top:4px}
-.data-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:14px}
-.data-item{background:var(--bg3);border-radius:var(--r2);padding:9px}
-.data-lbl{font-size:10px;color:var(--t3);margin-bottom:2px}
-.data-val{font-size:12px;font-weight:700;font-family:'SF Mono',monospace}
-.plan-item{background:var(--bg3);border-radius:var(--r2);padding:11px;margin-bottom:8px;border-left:3px solid var(--bdr)}
-.plan-item.approved{border-left-color:var(--accent)}
-.plan-item.pending{border-left-color:var(--amber)}
-.plan-item.refused{border-left-color:var(--red)}
-.plan-ref{font-size:10px;color:var(--t3);font-family:'SF Mono',monospace;margin-bottom:3px}
-.plan-desc{font-size:12px;font-weight:600;margin-bottom:5px}
-.plan-meta{display:flex;gap:10px;font-size:10px;color:var(--t2)}
-.risk-row{margin-bottom:9px}
-.risk-labels{display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px}
-.risk-track{height:6px;border-radius:3px;background:var(--bg3);overflow:hidden}
-.risk-fill{height:100%;border-radius:3px}
-.empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--t3);padding:30px;text-align:center}
-.empty-icon{font-size:40px;margin-bottom:10px;opacity:.3}
-.empty-title{font-size:14px;color:var(--t2);font-weight:600;margin-bottom:6px}
-.empty-sub{font-size:12px;line-height:1.6}
+nav button{
+background:#1e293b;
+border:none;
+color:white;
+padding:10px 18px;
+border-radius:8px;
+margin-left:10px;
+cursor:pointer;
+}
 
-/* ── PORTFOLIO PAGE ─────────────────────────────────────────── */
-#page-portfolio{flex-direction:column;overflow-y:auto;padding:20px;gap:18px}
-.kpi-strip{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
-.kpi-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:15px}
-.kpi-val{font-size:22px;font-weight:700;font-family:'SF Mono',monospace;margin-bottom:3px}
-.kpi-lbl{font-size:10px;color:var(--t3);font-weight:600;letter-spacing:.3px}
-.kpi-delta{font-size:10px;margin-top:3px}
-.portfolio-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+nav button:hover{
+background:#334155;
+}
 
-/* ── DCF PAGE ───────────────────────────────────────────────── */
-#page-dcf{flex-direction:row}
-.dcf-sidebar{width:280px;flex-shrink:0;background:var(--bg2);border-right:1px solid var(--bdr);overflow-y:auto;padding:16px}
-.dcf-main{flex:1;overflow-y:auto;padding:20px}
-.dcf-sec-lbl{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--bdr)}
-.dcf-section{margin-bottom:18px}
-.dcf-kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
-.dcf-kpi{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r);padding:14px 10px;text-align:center}
-.dcf-kpi-val{font-size:20px;font-weight:700;font-family:'SF Mono',monospace;margin-bottom:3px}
-.dcf-kpi-lbl{font-size:10px;color:var(--t3);font-weight:600}
-.dcf-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-.bar-wrap{display:flex;align-items:flex-end;gap:5px;height:80px}
-.bar{flex:1;border-radius:3px 3px 0 0;cursor:pointer;transition:opacity .2s}
-.bar:hover{opacity:.75}
-.bar-labels{display:flex;gap:5px;margin-top:5px}
-.bar-labels span{flex:1;text-align:center;font-size:9px;color:var(--t3)}
-.dscr-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.dscr-lbl{width:36px;font-size:11px;color:var(--t2)}
-.dscr-track{flex:1;height:8px;border-radius:4px;background:var(--bg3);overflow:hidden}
-.dscr-fill{height:100%;border-radius:4px;transition:width .6s}
-.dscr-val{width:44px;text-align:right;font-size:11px;font-family:'SF Mono',monospace}
-.wf-row{display:flex;align-items:center;gap:10px;margin-bottom:7px}
-.wf-lbl{width:155px;font-size:11px;color:var(--t2);flex-shrink:0}
-.wf-track{flex:1;height:20px;background:var(--bg3);border-radius:3px;overflow:hidden}
-.wf-bar{height:100%;border-radius:3px;transition:width .6s}
-.wf-val{width:100px;text-align:right;font-size:11px;font-family:'SF Mono',monospace;flex-shrink:0}
-.tbl-scroll{overflow-x:auto}
-th.r,td.r{text-align:right}
-td.pos{color:var(--accent)}td.neg{color:var(--red)}
-tr.hi td{background:var(--adim);color:var(--accent);font-weight:700}
-tr.tot td{border-top:1px solid var(--bdr2);font-weight:700;background:rgba(0,0,0,.1)}
-/* Sensitivity */
-.sens-hdr{padding:6px 4px;text-align:center;font-size:9px;color:var(--t3);font-weight:600}
-.sens-cell{padding:7px 3px;text-align:center;font-size:10px;border-radius:3px;font-family:'SF Mono',monospace;font-weight:700}
+.container{
+display:flex;
+height:calc(100vh - 70px);
+}
 
-/* ── PIPELINE PAGE ──────────────────────────────────────────── */
-#page-pipeline{flex-direction:column;overflow:hidden}
-.pipe-topbar{padding:14px 18px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;gap:10px}
-.pipe-board{flex:1;overflow-x:auto;overflow-y:hidden;padding:16px;display:flex;gap:12px}
-.pipe-col{width:230px;flex-shrink:0;background:var(--bg3);border-radius:var(--r);display:flex;flex-direction:column;overflow:hidden}
-.pipe-col-hdr{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--bdr)}
-.pipe-col-title{font-size:12px;font-weight:700}
-.pipe-count{background:rgba(255,255,255,.08);color:var(--t2);border-radius:12px;padding:1px 8px;font-size:10px;font-weight:700}
-.pipe-cards{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px}
-.pipe-card{background:var(--bg2);border:1px solid var(--bdr);border-radius:var(--r2);padding:11px;cursor:pointer;transition:all .2s}
-.pipe-card:hover{border-color:var(--accent)}
-.pipe-card-title{font-size:12px;font-weight:700;margin-bottom:3px}
-.pipe-card-meta{font-size:10px;color:var(--t3);margin-bottom:6px}
-.pipe-card-price{font-size:14px;font-weight:700;color:var(--accent);font-family:'SF Mono',monospace}
-.pipe-add-btn{margin:10px;padding:8px;background:transparent;border:1px dashed var(--bdr2);border-radius:var(--r2);color:var(--t3);font-size:11px;cursor:pointer;text-align:center;transition:all .2s;font-family:inherit}
-.pipe-add-btn:hover{border-color:var(--accent);color:var(--accent)}
+.sidebar{
+width:320px;
+background:#020617;
+border-right:1px solid #1e293b;
+padding:20px;
+overflow:auto;
+}
 
-/* ── MODAL ──────────────────────────────────────────────────── */
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:1000;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
-.modal{background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--r);width:480px;max-width:95vw;max-height:90vh;overflow-y:auto}
-.modal-hdr{padding:16px 20px;border-bottom:1px solid var(--bdr);display:flex;align-items:center;justify-content:space-between}
-.modal-title{font-size:15px;font-weight:700}
-.modal-close{width:28px;height:28px;border-radius:50%;background:var(--bg3);border:1px solid var(--bdr2);color:var(--t2);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.modal-close:hover{border-color:var(--red);color:var(--red)}
-.modal-body{padding:20px}
-.modal-footer{padding:14px 20px;border-top:1px solid var(--bdr);display:flex;justify-content:flex-end;gap:8px}
+.property{
+background:#1e293b;
+padding:15px;
+border-radius:10px;
+margin-bottom:15px;
+}
+
+.property h3{
+margin:0 0 8px 0;
+}
+
+.map{
+flex:1;
+display:flex;
+align-items:center;
+justify-content:center;
+font-size:28px;
+color:#64748b;
+}
+
 </style>
-</head>
-<body>
-<div class="app">
 
+</head>
+
+<body>
+
+<<<<<<< HEAD
   <!-- TOPBAR -->
   <div class="topbar">
     <div class="logo"><span class="logo-dot"></span>LandIQ</div>
@@ -515,18 +400,22 @@ tr.tot td{border-top:1px solid var(--bdr2);font-weight:700;background:rgba(0,0,0
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-footer" id="modal-footer"></div>
   </div>
+=======
+<header>
+
+<div class="logo">
+LandIQ
+>>>>>>> 6ce390bc426555e3e67cf3ae585fbc0fc2892e7d
 </div>
 
-<script>
-// ── STATE ─────────────────────────────────────────────────────────
-let properties = [];
-let selectedProp = null;
-let selectedDetTab = 'title';
-let activeFilters = new Set(['commercial','residential','land','industrial']);
-let portfolioData = { assets: [], summary: {} };
-let pipelineData = { grouped: {}, deals: [], stages: [] };
-let dcfResult = null;
+<nav>
+<button>Map</button>
+<button>Portfolio</button>
+<button>DCF Model</button>
+<button>Pipeline</button>
+</nav>
 
+<<<<<<< HEAD
 // ── NAVIGATION ────────────────────────────────────────────────────
 function showPage(id, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -538,593 +427,41 @@ function showPage(id, btn) {
   if (id === 'listings') loadListings();
   if (id === 'devapp' && document.getElementById('devapp-main').children.length && document.getElementById('devapp-main').children[0].querySelector) {}
 }
+=======
+</header>
+>>>>>>> 6ce390bc426555e3e67cf3ae585fbc0fc2892e7d
 
-// ── HELPERS ───────────────────────────────────────────────────────
-const fmt = (n, d=0) => {
-  if (n === null || n === undefined) return '—';
-  const s = Math.abs(n).toLocaleString('en-GB', { maximumFractionDigits: d, minimumFractionDigits: d });
-  return (n < 0 ? '-£' : '£') + s;
-};
-const fmtK = n => n >= 1e6 ? '£' + (n/1e6).toFixed(1) + 'm' : n >= 1e3 ? '£' + (n/1e3).toFixed(0) + 'k' : fmt(n);
-const scoreColor = s => s >= 85 ? '#2ecc9b' : s >= 70 ? '#f5a623' : '#e74c3c';
-const typeColor = t => ({ commercial: '#3498db', residential: '#2ecc9b', land: '#f5a623', industrial: '#9b59b6' })[t] || '#8fa3b1';
+<div class="container">
 
-// ── MAP / PROPERTIES ──────────────────────────────────────────────
-const PIN_POSITIONS = { 1:{x:380,y:225}, 2:{x:435,y:432}, 3:{x:245,y:258}, 4:{x:602,y:242}, 5:{x:305,y:135} };
+<div class="sidebar">
 
-async function loadProperties() {
-  try {
-    const res = await fetch('/api/properties');
-    properties = await res.json();
-    renderPropList(properties);
-    renderPins(properties);
-  } catch(e) { console.error('Failed to load properties', e); }
-}
+<div class="property">
+<h3>126 Bishopsgate</h3>
+Price £4.2m<br>
+Yield 6.4%
+</div>
 
-function filterProps(q) {
-  const qL = (q || '').toLowerCase();
-  const filtered = properties.filter(p => {
-    if (!activeFilters.has(p.type)) return false;
-    if (!qL) return true;
-    return p.title.toLowerCase().includes(qL) || p.address.toLowerCase().includes(qL) || p.postcode.toLowerCase().includes(qL) || (p.titleNum||'').toLowerCase().includes(qL);
-  });
-  renderPropList(filtered);
-  renderPins(filtered);
-}
+<div class="property">
+<h3>Former Gasworks Site</h3>
+Price £8.9m<br>
+Strategic Land
+</div>
 
-function toggleChip(el) {
-  const f = el.dataset.f;
-  if (activeFilters.has(f)) activeFilters.delete(f); else activeFilters.add(f);
-  el.classList.toggle('on');
-  filterProps(document.getElementById('map-search').value);
-}
+<div class="property">
+<h3>47-49 Carnaby Street</h3>
+Price £2.1m<br>
+Prime West End
+</div>
 
-function handleGlobalSearch(v) {
-  document.getElementById('map-search').value = v;
-  filterProps(v);
-}
+</div>
 
-function renderPropList(props) {
-  const container = document.getElementById('prop-list');
-  if (!props.length) { container.innerHTML = '<div style="text-align:center;padding:30px;color:var(--t3);font-size:12px">No properties match filters</div>'; return; }
-  container.innerHTML = props.map(p => `
-    <div class="prop-card${selectedProp && selectedProp.id === p.id ? ' sel' : ''}" onclick="selectProp(${p.id})">
-      <div class="prop-name">${p.title}</div>
-      <div class="prop-addr">${p.address}</div>
-      <div class="prop-tags">
-        ${p.tags.slice(0,3).map(t => `<span class="prop-tag" style="background:${typeColor(p.type)}22;color:${typeColor(p.type)}">${t}</span>`).join('')}
-      </div>
-      <div class="stat-row">
-        <div class="stat-mini"><div class="stat-v">${fmtK(p.price)}</div><div class="stat-l">Price</div></div>
-        <div class="stat-mini"><div class="stat-v">${p.yield_pct ? p.yield_pct + '%' : '—'}</div><div class="stat-l">Yield</div></div>
-        <div class="stat-mini"><div class="stat-v" style="color:${scoreColor(p.score)}">${p.score}</div><div class="stat-l">Score</div></div>
-      </div>
-    </div>`).join('');
-}
+<div class="map">
 
-function renderPins(props) {
-  const layer = document.getElementById('pins-layer');
-  layer.innerHTML = props.map(p => {
-    const pos = PIN_POSITIONS[p.id] || { x: 400, y: 300 };
-    const col = typeColor(p.type);
-    const sel = selectedProp && selectedProp.id === p.id;
-    return `
-      <g style="cursor:pointer" onclick="selectProp(${p.id})">
-        <circle cx="${pos.x}" cy="${pos.y}" r="${sel?14:9}" fill="${col}" opacity="${sel?1:.85}" stroke="${sel?'#fff':'transparent'}" stroke-width="${sel?2:0}"/>
-        <circle cx="${pos.x}" cy="${pos.y}" r="${sel?20:14}" fill="${col}" opacity=".12"/>
-        <text x="${pos.x}" y="${pos.y+4}" text-anchor="middle" font-size="8" font-family="'SF Mono',monospace" fill="#fff" font-weight="700">${p.score}</text>
-      </g>`;
-  }).join('');
-}
+UK Property Intelligence Platform
 
-async function selectProp(id) {
-  selectedProp = properties.find(p => p.id === id);
-  renderPropList(properties.filter(p => activeFilters.has(p.type)));
-  renderPins(properties.filter(p => activeFilters.has(p.type)));
-  renderDetail(selectedProp, 'title');
-}
+</div>
 
-// ── PROPERTY DETAIL ───────────────────────────────────────────────
-const PLANNING = {
-  1:[{ref:'22/01234/FUL',desc:'Change of use: office to 12 residential units',status:'approved',date:'Jun 2022',lpa:'City of London'},{ref:'24/00123/PRE',desc:'Pre-app: 18 residential units above commercial',status:'pending',date:'Jan 2024',lpa:'City of London'}],
-  2:[{ref:'23/AP/2341',desc:'Outline: 340 mixed-tenure residential units + 2,400sqm commercial',status:'pending',date:'Oct 2023',lpa:'Southwark'}],
-  3:[{ref:'20/05612/LBC',desc:'Listed building consent: internal alterations ground floor',status:'approved',date:'Feb 2020',lpa:'Westminster'},{ref:'23/03421/FULL',desc:'New shopfront and external lighting scheme',status:'refused',date:'Apr 2023',lpa:'Westminster'}],
-  4:[{ref:'21/02189/FUL',desc:'Roof terrace addition and plant replacement',status:'approved',date:'Mar 2021',lpa:'Tower Hamlets'},{ref:'24/00567/FUL',desc:'Floors 8-12 conversion to serviced apartments',status:'pending',date:'Feb 2024',lpa:'Tower Hamlets'}],
-  5:[{ref:'23/04512/FUL',desc:'Change of use: industrial to mixed-use creative workspace and 60 residential units',status:'pending',date:'Aug 2023',lpa:'Camden'}],
-};
-const OWNERS = {
-  1:[{name:'Bishopsgate Properties Ltd',type:'UK Company',date:'Mar 2018'}],
-  2:[{name:'Gasworks Land Holdings LP',type:'LP (Jersey)',date:'Aug 2016'},{name:'British Gas Pension Trust',type:'Pension Fund',date:'1989'}],
-  3:[{name:'Prime Estates West End Ltd',type:'UK Company',date:'Sep 2015'}],
-  4:[{name:'CW Towers REIT plc',type:'UK REIT',date:'Jan 2020'}],
-  5:[{name:"Kings Cross Developments Ltd",type:'UK Company',date:'Jun 2019'}],
-};
+</div>
 
-function renderDetail(p, tab) {
-  selectedDetTab = tab;
-  const panel = document.getElementById('detail-panel');
-  const sc = scoreColor(p.score);
-  const rc = p.riskScore < 30 ? '#2ecc9b' : p.riskScore < 50 ? '#f5a623' : '#e74c3c';
-
-  let body = '';
-  if (tab === 'title') {
-    body = `
-      <div class="sec-lbl">Title Register</div>
-      <div class="data-grid">
-        <div class="data-item"><div class="data-lbl">Title Number</div><div class="data-val">${p.titleNum}</div></div>
-        <div class="data-item"><div class="data-lbl">Tenure</div><div class="data-val">${p.tenure}</div></div>
-        <div class="data-item"><div class="data-lbl">Registered Lender</div><div class="data-val" style="font-size:10px">${p.lender}</div></div>
-        <div class="data-item"><div class="data-lbl">Last Transfer</div><div class="data-val" style="font-size:11px">${p.lastSold}</div></div>
-        <div class="data-item"><div class="data-lbl">Floor Area</div><div class="data-val">${p.sqft.toLocaleString()} sqft</div></div>
-        <div class="data-item"><div class="data-lbl">£/sqft</div><div class="data-val">£${Math.round(p.price/p.sqft)}</div></div>
-      </div>
-      <button class="btn btn-primary" style="width:100%;margin-bottom:8px" onclick="runDCFForProp(${p.id})">Run DCF Model →</button>
-      <button class="btn btn-outline" style="width:100%" onclick="alert('HMLR API integration required for live title register PDF')">Download Title Register</button>`;
-  } else if (tab === 'planning') {
-    const plans = PLANNING[p.id] || [];
-    body = `
-      <div class="sec-lbl">Planning Applications (${plans.length})</div>
-      ${plans.map(pl => `
-        <div class="plan-item ${pl.status}">
-          <div class="plan-ref">${pl.ref}</div>
-          <div class="plan-desc">${pl.desc}</div>
-          <div class="plan-meta">
-            <span style="color:${pl.status==='approved'?'#2ecc9b':pl.status==='pending'?'#f5a623':'#e74c3c'};font-weight:700">${pl.status}</span>
-            <span>${pl.date}</span><span>${pl.lpa}</span>
-          </div>
-        </div>`).join('')}
-      <div class="sec-lbl" style="margin-top:14px">Constraints</div>
-      <div class="data-grid">
-        <div class="data-item"><div class="data-lbl">Conservation Area</div><div class="data-val" style="color:${p.tags.includes('Listed')?'#f5a623':'#2ecc9b'}">${p.tags.includes('Listed')?'Yes':'No'}</div></div>
-        <div class="data-item"><div class="data-lbl">Listed Building</div><div class="data-val" style="color:${p.tags.includes('Listed')?'#f5a623':'#2ecc9b'}">${p.tags.includes('Listed')?'Grade II':'No'}</div></div>
-        <div class="data-item"><div class="data-lbl">Flood Zone</div><div class="data-val green">Zone 1</div></div>
-        <div class="data-item"><div class="data-lbl">TPO Trees</div><div class="data-val green">None</div></div>
-      </div>`;
-  } else if (tab === 'valuation') {
-    body = `
-      <div class="sec-lbl">Valuation Metrics</div>
-      <div class="data-grid">
-        <div class="data-item"><div class="data-lbl">Asking Price</div><div class="data-val">${fmtK(p.price)}</div></div>
-        <div class="data-item"><div class="data-lbl">Net Yield</div><div class="data-val" style="color:${p.yield_pct>5?'#2ecc9b':p.yield_pct>3?'#f5a623':'#e74c3c'}">${p.yield_pct?p.yield_pct+'%':'N/A'}</div></div>
-        <div class="data-item"><div class="data-lbl">£/sqft</div><div class="data-val">£${Math.round(p.price/p.sqft)}</div></div>
-        <div class="data-item"><div class="data-lbl">Deal Score</div><div class="data-val" style="color:${sc}">${p.score}/100</div></div>
-        <div class="data-item"><div class="data-lbl">Risk Score</div><div class="data-val" style="color:${rc}">${p.riskScore}/100</div></div>
-        <div class="data-item"><div class="data-lbl">Area</div><div class="data-val" style="font-size:10px">${p.area}</div></div>
-      </div>
-      <div class="sec-lbl">Risk Breakdown</div>
-      ${[['Market Risk', p.riskScore, '#f5a623'], ['Planning Risk', p.tags.includes('Listed')?65:30, '#f5a623'], ['Liquidity', 28, '#2ecc9b'], ['Finance Risk', 22, '#2ecc9b']].map(([l,v,c]) => `
-        <div class="risk-row">
-          <div class="risk-labels"><span style="color:var(--t2)">${l}</span><span style="color:var(--t3)">${v}/100</span></div>
-          <div class="risk-track"><div class="risk-fill" style="width:${v}%;background:${c}"></div></div>
-        </div>`).join('')}
-      <button class="btn btn-primary" style="width:100%;margin-top:10px" onclick="runDCFForProp(${p.id})">Open in DCF Model →</button>`;
-  } else if (tab === 'owners') {
-    const owners = OWNERS[p.id] || [];
-    body = `
-      <div class="sec-lbl">Registered Proprietors</div>
-      ${owners.map(o => `
-        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--bdr)">
-          <div><div style="font-size:13px;font-weight:600">${o.name}</div><div style="font-size:11px;color:var(--t3)">${o.type}</div></div>
-          <div style="font-size:11px;color:var(--t2);font-family:'SF Mono',monospace">${o.date}</div>
-        </div>`).join('')}
-      <div class="sec-lbl" style="margin-top:14px">Charges</div>
-      <div class="data-grid">
-        <div class="data-item"><div class="data-lbl">Lender</div><div class="data-val" style="font-size:10px">${p.lender}</div></div>
-        <div class="data-item"><div class="data-lbl">Title</div><div class="data-val">${p.titleNum}</div></div>
-      </div>
-      <button class="btn btn-outline" style="width:100%" onclick="alert('Companies House API key required for live UBO/PSC data')">Run Company Search</button>`;
-  }
-
-  panel.innerHTML = `
-    <div class="detail-hero">
-      <div class="detail-title">${p.title}</div>
-      <div class="detail-addr">${p.address}</div>
-      <div class="score-strip">
-        <div class="score-box"><div class="score-val" style="color:${sc}">${p.score}</div><div class="score-lbl">Score</div></div>
-        <div class="score-box"><div class="score-val">${fmtK(p.price)}</div><div class="score-lbl">Price</div></div>
-        <div class="score-box"><div class="score-val" style="color:${rc}">${p.riskScore}</div><div class="score-lbl">Risk</div></div>
-      </div>
-    </div>
-    <div class="det-tabs">
-      ${['title','planning','valuation','owners'].map(t =>
-        `<div class="det-tab${t===tab?' active':''}" onclick="renderDetail(selectedProp,'${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</div>`
-      ).join('')}
-    </div>
-    <div class="det-body">${body}</div>`;
-}
-
-function runDCFForProp(id) {
-  const p = properties.find(x => x.id === id);
-  if (!p || !p.noi) { showPage('dcf'); return; }
-  document.getElementById('d-price').value = p.price;
-  document.getElementById('d-noi').value = p.noi || Math.round(p.price * (p.yield_pct||6) / 100);
-  showPage('dcf');
-  runDCF();
-}
-
-// ── PORTFOLIO ─────────────────────────────────────────────────────
-async function loadPortfolio() {
-  try {
-    const res = await fetch('/api/portfolio');
-    portfolioData = await res.json();
-    renderPortfolio();
-  } catch(e) { console.error('Portfolio load failed', e); }
-}
-
-function renderPortfolio() {
-  const { assets, summary } = portfolioData;
-  const avgYield = assets.filter(a=>a.yield_pct).reduce((s,a)=>s+a.yield_pct,0) / (assets.filter(a=>a.yield_pct).length||1);
-
-  document.getElementById('port-kpis').innerHTML = [
-    ['Total AUM', fmtK(summary.totalAUM), 'green', ''],
-    ['Assets', summary.count, 'white', ''],
-    ['Annual NOI', fmtK(summary.totalNOI), 'green', ''],
-    ['Avg Yield', avgYield.toFixed(1)+'%', avgYield>5?'green':'amber', ''],
-    ['In Development', assets.filter(a=>a.status==='development').length, 'amber', ''],
-  ].map(([l,v,c,d]) => `
-    <div class="kpi-card">
-      <div class="kpi-val ${c}">${v}</div>
-      <div class="kpi-lbl">${l}</div>
-    </div>`).join('');
-
-  document.getElementById('asset-tbody').innerHTML = assets.map(a => `
-    <tr onclick="">
-      <td style="font-weight:600">${a.title}</td>
-      <td><span class="badge" style="background:${typeColor(a.asset_type)}22;color:${typeColor(a.asset_type)}">${a.asset_type}</span></td>
-      <td class="mono">${fmtK(a.price)}</td>
-      <td class="mono" style="color:${a.yield_pct>5?'#2ecc9b':a.yield_pct>3?'#f5a623':'var(--t3)'}">${a.yield_pct?a.yield_pct+'%':'—'}</td>
-      <td class="mono" style="color:${a.ltv>65?'#f5a623':'#2ecc9b'}">${a.ltv}%</td>
-      <td><span class="badge ${a.status==='active'?'b-green':a.status==='development'?'b-amber':'b-red'}">${a.status}</span></td>
-      <td><button class="btn btn-danger btn-sm" onclick="deleteAsset(${a.id},event)">✕</button></td>
-    </tr>`).join('');
-
-  // Allocation donut bars
-  const byType = summary.byType || {};
-  const total = summary.totalAUM || 1;
-  const types = Object.entries(byType).sort(([,a],[,b])=>b-a);
-  document.getElementById('alloc-chart').innerHTML = `
-    <div style="display:flex;align-items:center;gap:20px">
-      <svg width="90" height="90" viewBox="0 0 90 90">
-        ${(() => {
-          let offset = 0;
-          const r = 34, cx = 45, cy = 45, circ = 2*Math.PI*r;
-          return types.map(([t,v]) => {
-            const pct = v/total;
-            const dash = pct*circ;
-            const el = `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${typeColor(t)}" stroke-width="16" stroke-dasharray="${dash} ${circ}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
-            offset += dash;
-            return el;
-          }).join('') + `<text x="45" y="49" text-anchor="middle" font-size="11" font-weight="700" fill="#e8ecf0" font-family="'SF Mono',monospace">${fmtK(total)}</text>`;
-        })()}
-      </svg>
-      <div style="flex:1">
-        ${types.map(([t,v]) => `
-          <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px">
-            <span style="width:9px;height:9px;border-radius:50%;background:${typeColor(t)};flex-shrink:0"></span>
-            <span style="font-size:11px;color:var(--t2);flex:1;text-transform:capitalize">${t}</span>
-            <span style="font-size:11px;font-family:'SF Mono',monospace;color:${typeColor(t)}">${fmtK(v)}</span>
-          </div>`).join('')}
-      </div>
-    </div>`;
-}
-
-async function deleteAsset(id, e) {
-  e.stopPropagation();
-  if (!confirm('Delete this asset?')) return;
-  await fetch('/api/portfolio/' + id, { method: 'DELETE' });
-  loadPortfolio();
-}
-
-function openAddAssetModal() {
-  document.getElementById('modal-title').textContent = 'Add Asset';
-  document.getElementById('modal-body').innerHTML = `
-    <div class="field"><label>Property Title *</label><input id="m-title" placeholder="e.g. 126 Bishopsgate"></div>
-    <div class="field"><label>Address *</label><input id="m-address" placeholder="Full address"></div>
-    <div class="row2">
-      <div class="field"><label>Postcode</label><input id="m-postcode" placeholder="EC2M 4HH"></div>
-      <div class="field"><label>Type</label><select id="m-type"><option value="commercial">Commercial</option><option value="residential">Residential</option><option value="land">Land</option><option value="industrial">Industrial</option></select></div>
-    </div>
-    <div class="row2">
-      <div class="field"><label>Purchase Price (£)</label><input type="number" id="m-price" placeholder="4200000"></div>
-      <div class="field"><label>Annual NOI (£)</label><input type="number" id="m-noi" placeholder="268800"></div>
-    </div>
-    <div class="row2">
-      <div class="field"><label>LTV (%)</label><input type="number" id="m-ltv" value="60"></div>
-      <div class="field"><label>Tenure</label><select id="m-tenure"><option>Freehold</option><option>Leasehold</option></select></div>
-    </div>`;
-  document.getElementById('modal-footer').innerHTML = `
-    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="saveAsset()">Save Asset</button>`;
-  document.getElementById('modal-bg').style.display = 'flex';
-}
-
-async function saveAsset() {
-  const title = document.getElementById('m-title').value.trim();
-  const address = document.getElementById('m-address').value.trim();
-  if (!title || !address) { alert('Title and address are required'); return; }
-  await fetch('/api/portfolio', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      title, address,
-      postcode: document.getElementById('m-postcode').value,
-      asset_type: document.getElementById('m-type').value,
-      price: +document.getElementById('m-price').value || 0,
-      noi: +document.getElementById('m-noi').value || 0,
-      ltv: +document.getElementById('m-ltv').value || 60,
-      tenure: document.getElementById('m-tenure').value,
-    })
-  });
-  closeModal();
-  loadPortfolio();
-}
-
-// ── DCF ───────────────────────────────────────────────────────────
-async function runDCF() {
-  const inputs = {
-    price: +document.getElementById('d-price').value,
-    noi: +document.getElementById('d-noi').value,
-    holdYears: +document.getElementById('d-hold').value,
-    noiGrowthPct: +document.getElementById('d-noig').value,
-    sdltPct: +document.getElementById('d-sdlt').value,
-    otherAcqPct: +document.getElementById('d-acq').value,
-    exitCapRatePct: +document.getElementById('d-exitcap').value,
-    sellCostPct: +document.getElementById('d-sell').value,
-    ltvPct: +document.getElementById('d-ltv').value,
-    interestRatePct: +document.getElementById('d-rate').value,
-    amortYears: +document.getElementById('d-amort').value,
-    ioYears: +document.getElementById('d-io').value,
-    discountRatePct: +document.getElementById('d-disc').value,
-  };
-  if (!inputs.price || !inputs.noi) { alert('Price and NOI are required'); return; }
-  try {
-    const res = await fetch('/api/dcf/calculate', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(inputs) });
-    dcfResult = await res.json();
-    if (dcfResult.error) { alert(dcfResult.error); return; }
-    renderDCF(dcfResult);
-  } catch(e) { alert('DCF calculation failed: ' + e.message); }
-}
-
-function renderDCF(r) {
-  const { kpis, yearRows, summary, sensitivity } = r;
-  const kc = v => v > 12 ? '#2ecc9b' : v > 7 ? '#f5a623' : '#e74c3c';
-
-  // KPIs
-  const kpiHtml = [
-    ['Unlev. IRR', kpis.unleveragedIRR + '%', kc(kpis.unleveragedIRR)],
-    ['Levered IRR', kpis.leveredIRR + '%', kc(kpis.leveredIRR)],
-    ['Equity Multiple', kpis.equityMultiple + 'x', kpis.equityMultiple >= 1.8 ? '#2ecc9b' : kpis.equityMultiple >= 1.3 ? '#f5a623' : '#e74c3c'],
-    ['NPV', (kpis.npv >= 0 ? '+' : '') + fmtK(kpis.npv), kpis.npv >= 0 ? '#2ecc9b' : '#e74c3c'],
-    ['DSCR Yr 1', kpis.dscr + 'x', kpis.dscr >= 1.5 ? '#2ecc9b' : kpis.dscr >= 1.1 ? '#f5a623' : '#e74c3c'],
-  ].map(([l,v,c]) => `<div class="dcf-kpi"><div class="dcf-kpi-val" style="color:${c}">${v}</div><div class="dcf-kpi-lbl">${l}</div></div>`).join('');
-
-  // Year table
-  const tableHtml = `
-    <div class="tbl-scroll">
-    <table>
-      <thead><tr><th>Item</th>${yearRows.map(y=>`<th class="r">Yr ${y.year}</th>`).join('')}<th class="r">Total</th></tr></thead>
-      <tbody>
-        <tr><td>NOI</td>${yearRows.map(y=>`<td class="r pos">${fmt(y.noi)}</td>`).join('')}<td class="r pos">${fmt(yearRows.reduce((s,y)=>s+y.noi,0))}</td></tr>
-        <tr><td>Debt Service</td>${yearRows.map(y=>`<td class="r neg">${fmt(-y.debtService)}</td>`).join('')}<td class="r neg">${fmt(-yearRows.reduce((s,y)=>s+y.debtService,0))}</td></tr>
-        <tr class="tot"><td>Operating CF</td>${yearRows.map(y=>`<td class="r ${y.netCashFlow>=0?'pos':'neg'}">${fmt(y.netCashFlow)}</td>`).join('')}<td class="r">${fmt(yearRows.reduce((s,y)=>s+y.netCashFlow,0))}</td></tr>
-        <tr><td>Exit Proceeds</td>${yearRows.map(y=>`<td class="r" style="color:#3498db">${y.exitProceeds?fmt(y.exitProceeds):'—'}</td>`).join('')}<td class="r blue">${fmt(summary.exitNet)}</td></tr>
-        <tr><td>Debt Repayment</td>${yearRows.map(y=>`<td class="r neg">${y.exitDebtRepay?fmt(y.exitDebtRepay):'—'}</td>`).join('')}<td class="r neg">${fmt(-summary.exitDebt)}</td></tr>
-        <tr class="hi"><td>Total Equity CF</td>${yearRows.map(y=>`<td class="r">${fmt(y.totalEquityCF)}</td>`).join('')}<td class="r">${fmt(yearRows.reduce((s,y)=>s+y.totalEquityCF,0))}</td></tr>
-      </tbody>
-    </table>
-    </div>`;
-
-  // CF chart
-  const maxCF = Math.max(...yearRows.map(y=>Math.abs(y.totalEquityCF)));
-  const cfChart = `
-    <div class="bar-wrap">${yearRows.map((y,i) => {
-      const h = Math.max(4, Math.abs(y.totalEquityCF)/maxCF*76);
-      const col = i===yearRows.length-1?'#3498db':y.totalEquityCF>=0?'#2ecc9b':'#e74c3c';
-      return `<div class="bar" style="height:${h}px;background:${col}" title="${fmt(y.totalEquityCF)}"></div>`;
-    }).join('')}</div>
-    <div class="bar-labels">${yearRows.map(y=>`<span>Yr ${y.year}</span>`).join('')}</div>`;
-
-  // DSCR bars
-  const dscrHtml = yearRows.map(y => {
-    const c = y.dscr>=1.5?'#2ecc9b':y.dscr>=1.1?'#f5a623':'#e74c3c';
-    return `<div class="dscr-row">
-      <div class="dscr-lbl">Yr ${y.year}</div>
-      <div class="dscr-track"><div class="dscr-fill" style="width:${Math.min(100,y.dscr/3*100)}%;background:${c}"></div></div>
-      <div class="dscr-val" style="color:${c}">${y.dscr}x</div>
-    </div>`;
-  }).join('') + `<div style="font-size:10px;color:var(--t3);margin-top:6px">Min covenant: 1.25x</div>`;
-
-  // Waterfall
-  const wfItems = [
-    ['Total NOI', yearRows.reduce((s,y)=>s+y.noi,0), '#3498db'],
-    ['Debt Service', -yearRows.reduce((s,y)=>s+y.debtService,0), '#e74c3c'],
-    ['Operating CF', yearRows.reduce((s,y)=>s+y.netCashFlow,0), '#2ecc9b'],
-    ['Exit Proceeds', summary.exitNet, '#9b59b6'],
-    ['Debt Repayment', -summary.exitDebt, '#e74c3c'],
-    ['Total Equity Return', yearRows.reduce((s,y)=>s+y.totalEquityCF,0), '#2ecc9b'],
-  ];
-  const maxWF = Math.max(...wfItems.map(([,v])=>Math.abs(v)));
-  const wfHtml = wfItems.map(([l,v,c]) => `
-    <div class="wf-row">
-      <div class="wf-lbl">${l}</div>
-      <div class="wf-track"><div class="wf-bar" style="width:${Math.abs(v)/maxWF*100}%;background:${c}"></div></div>
-      <div class="wf-val" style="color:${v<0?'#e74c3c':'#2ecc9b'}">${fmt(v)}</div>
-    </div>`).join('');
-
-  // Sensitivity
-  const cols = sensitivity.exitCaps.length;
-  const sensGrid = `
-    <div style="display:grid;grid-template-columns:auto ${sensitivity.exitCaps.map(()=>'1fr').join(' ')};gap:3px">
-      <div class="sens-hdr">NOI Growth↓ / Exit Cap→</div>
-      ${sensitivity.exitCaps.map(c=>`<div class="sens-hdr">${c}%</div>`).join('')}
-      ${sensitivity.noiGrows.map((ng,ri) =>
-        `<div class="sens-hdr">${ng}%</div>` +
-        sensitivity.matrix[ri].map(v => {
-          const c = v>15?'rgba(46,204,155,.35)':v>10?'rgba(46,204,155,.18)':v>5?'rgba(245,166,35,.2)':'rgba(231,76,60,.25)';
-          const tc = v>10?'#2ecc9b':v>5?'#f5a623':'#e74c3c';
-          return `<div class="sens-cell" style="background:${c};color:${tc}">${v}%</div>`;
-        }).join('')
-      ).join('')}
-    </div>`;
-
-  // Amort table
-  const amortHtml = `
-    <div class="tbl-scroll"><table>
-      <thead><tr><th>Year</th><th class="r">Opening</th><th class="r">Interest</th><th class="r">Principal</th><th class="r">Payment</th><th class="r">Closing</th></tr></thead>
-      <tbody>${yearRows.map(y=>`
-        <tr>
-          <td>Yr ${y.year}</td>
-          <td class="r mono">${fmt(y.openingBalance)}</td>
-          <td class="r mono neg">${fmt(-y.interest)}</td>
-          <td class="r mono">${fmt(y.principal)}</td>
-          <td class="r mono neg">${fmt(-(y.interest+y.principal))}</td>
-          <td class="r mono">${fmt(y.closingBalance)}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table></div>`;
-
-  document.getElementById('dcf-main').innerHTML = `
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
-      <div><div style="font-size:18px;font-weight:700">DCF Results</div><div style="font-size:12px;color:var(--t3)">${r.inputs.holdYears}-year hold · Entry cap ${r.inputs.exitCapRatePct}% → Exit ${r.inputs.exitCapRatePct}%</div></div>
-    </div>
-    <div class="dcf-kpi-row">${kpiHtml}</div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-hdr"><span class="card-title">Year-by-Year Cash Flows</span></div>
-      <div class="card-body">${tableHtml}</div>
-    </div>
-    <div class="dcf-grid" style="margin-bottom:16px">
-      <div class="card"><div class="card-hdr"><span class="card-title">Equity Cash Flow</span></div><div class="card-body">${cfChart}</div></div>
-      <div class="card"><div class="card-hdr"><span class="card-title">DSCR by Year</span></div><div class="card-body">${dscrHtml}</div></div>
-    </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-hdr"><span class="card-title">Returns Waterfall</span></div>
-      <div class="card-body">${wfHtml}</div>
-    </div>
-    <div class="card" style="margin-bottom:16px">
-      <div class="card-hdr"><span class="card-title">Levered IRR Sensitivity — Exit Cap Rate vs NOI Growth</span></div>
-      <div class="card-body" style="overflow-x:auto">${sensGrid}</div>
-    </div>
-    <div class="card">
-      <div class="card-hdr"><span class="card-title">Mortgage Amortisation Schedule</span></div>
-      <div class="card-body">${amortHtml}</div>
-    </div>`;
-}
-
-async function saveDCF() {
-  if (!dcfResult) { alert('Run the model first'); return; }
-  const name = prompt('Name this model:', 'DCF Model ' + new Date().toLocaleDateString('en-GB'));
-  if (!name) return;
-  await fetch('/api/dcf/save', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ name, inputs: dcfResult.inputs, outputs: dcfResult.kpis })
-  });
-  alert('Model saved ✓');
-}
-
-// ── PIPELINE ──────────────────────────────────────────────────────
-const STAGE_LABELS = { prospecting:'Prospecting', due_diligence:'Due Diligence', offer_legal:'Offer / Legal', exchanged:'Exchanged', completed:'Completed', dead:'Dead' };
-const STAGE_COLORS = { prospecting:'#566b7a', due_diligence:'#3498db', offer_legal:'#f5a623', exchanged:'#2ecc9b', completed:'#9b59b6', dead:'#e74c3c' };
-
-async function loadPipeline() {
-  try {
-    const res = await fetch('/api/pipeline');
-    pipelineData = await res.json();
-    renderPipeline();
-  } catch(e) { console.error('Pipeline load failed', e); }
-}
-
-function renderPipeline() {
-  const { grouped, stages, totalValue } = pipelineData;
-  document.getElementById('pipe-summary').textContent = `${pipelineData.deals.filter(d=>!['completed','dead'].includes(d.stage)).length} active deals · ${fmtK(totalValue)} pipeline value`;
-  const activeStages = ['prospecting','due_diligence','offer_legal','exchanged'];
-  document.getElementById('pipe-board').innerHTML = activeStages.map(stage => {
-    const deals = (grouped[stage] || []);
-    return `
-      <div class="pipe-col">
-        <div class="pipe-col-hdr">
-          <span class="pipe-col-title" style="color:${STAGE_COLORS[stage]}">${STAGE_LABELS[stage]}</span>
-          <span class="pipe-count">${deals.length}</span>
-        </div>
-        <div class="pipe-cards">
-          ${deals.map(d => `
-            <div class="pipe-card">
-              <div class="pipe-card-title">${d.title}</div>
-              <div class="pipe-card-meta">${d.asset_type} · ${d.address.split(',').slice(-2).join(',').trim()}</div>
-              <div style="display:flex;justify-content:space-between;align-items:center">
-                <div class="pipe-card-price">${fmtK(d.guide_price)}</div>
-                <div style="display:flex;gap:4px">
-                  ${activeStages.filter(s=>s!==stage).slice(0,2).map(s=>`<button class="btn btn-outline btn-sm" style="padding:3px 7px;font-size:10px" onclick="moveDeal(${d.id},'${s}')">→ ${STAGE_LABELS[s].split(' ')[0]}</button>`).join('')}
-                  <button class="btn btn-danger btn-sm" style="padding:3px 6px" onclick="deleteDeal(${d.id})">✕</button>
-                </div>
-              </div>
-            </div>`).join('')}
-        </div>
-        <button class="pipe-add-btn" onclick="openAddDealModal('${stage}')">+ Add deal</button>
-      </div>`;
-  }).join('');
-}
-
-async function moveDeal(id, stage) {
-  await fetch('/api/pipeline/' + id, { method:'PATCH', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ stage }) });
-  loadPipeline();
-}
-
-async function deleteDeal(id) {
-  if (!confirm('Remove this deal?')) return;
-  await fetch('/api/pipeline/' + id, { method:'DELETE' });
-  loadPipeline();
-}
-
-function openAddDealModal(defaultStage = 'prospecting') {
-  document.getElementById('modal-title').textContent = 'Add Deal to Pipeline';
-  document.getElementById('modal-body').innerHTML = `
-    <div class="field"><label>Property Title *</label><input id="m-title" placeholder="e.g. SE17 Warehouse"></div>
-    <div class="field"><label>Address *</label><input id="m-address" placeholder="Full address"></div>
-    <div class="row2">
-      <div class="field"><label>Postcode</label><input id="m-postcode" placeholder="SE17 1RJ"></div>
-      <div class="field"><label>Type</label><select id="m-type"><option>commercial</option><option>residential</option><option>land</option><option>industrial</option></select></div>
-    </div>
-    <div class="row2">
-      <div class="field"><label>Guide Price (£)</label><input type="number" id="m-price" placeholder="3200000"></div>
-      <div class="field"><label>Stage</label>
-        <select id="m-stage">
-          ${['prospecting','due_diligence','offer_legal','exchanged'].map(s=>`<option value="${s}"${s===defaultStage?' selected':''}>${STAGE_LABELS[s]}</option>`).join('')}
-        </select>
-      </div>
-    </div>
-    <div class="field"><label>Notes</label><textarea id="m-notes" rows="2" placeholder="Any notes…"></textarea></div>`;
-  document.getElementById('modal-footer').innerHTML = `
-    <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
-    <button class="btn btn-primary" onclick="saveDeal()">Add Deal</button>`;
-  document.getElementById('modal-bg').style.display = 'flex';
-}
-
-async function saveDeal() {
-  const title = document.getElementById('m-title').value.trim();
-  const address = document.getElementById('m-address').value.trim();
-  if (!title || !address) { alert('Title and address required'); return; }
-  await fetch('/api/pipeline', {
-    method:'POST', headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({
-      title, address,
-      postcode: document.getElementById('m-postcode').value,
-      asset_type: document.getElementById('m-type').value,
-      guide_price: +document.getElementById('m-price').value || 0,
-      stage: document.getElementById('m-stage').value,
-      notes: document.getElementById('m-notes').value,
-    })
-  });
-  closeModal();
-  loadPipeline();
-}
-
-// ── MODAL ─────────────────────────────────────────────────────────
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modal-bg')) return;
-  document.getElementById('modal-bg').style.display = 'none';
-}
-
-// ── INIT ──────────────────────────────────────────────────────────
-loadProperties();
-</script>
 </body>
 </html>
