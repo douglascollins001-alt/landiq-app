@@ -1,32 +1,35 @@
 const express = require('express');
 const path = require('path');
-const { ensureDb } = require('./lib/store');
+const db = require('./db/database');
 
-const listingsRoute = require('./routes/listings');
-const portfolioRoute = require('./routes/portfolio');
-const pipelineRoute = require('./routes/pipeline');
-const dcfRoute = require('./routes/dcf');
-const devAppraisalRoute = require('./routes/devAppraisal');
-
-ensureDb();
+const listingsRoutes = require('./routes/listings');
+const devAppraisalRoutes = require('./routes/devappraisal');
+const portfolioRoutes = require('./routes/portfolio');
+const pipelineRoutes = require('./routes/pipeline');
+const dcfRoutes = require('./routes/dcf');
+const propertyRoutes = require('./routes/properties');
 
 const app = express();
-const port = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
-app.use(express.static(path.join(__dirname, '..', 'public')));
+app.use(express.json());
+app.use(express.static(path.join(__dirname, '../public')));
 
-app.use('/api/listings', listingsRoute);
-app.use('/api/portfolio', portfolioRoute);
-app.use('/api/pipeline', pipelineRoute);
-app.use('/api/dcf', dcfRoute);
-app.use('/api/dev-appraisal', devAppraisalRoute);
+// API routes
+app.use('/api/listings', listingsRoutes);
+app.use('/api/devappraisal', devAppraisalRoutes);
+app.use('/api/portfolio', portfolioRoutes);
+app.use('/api/pipeline', pipelineRoutes);
+app.use('/api/dcf', dcfRoutes);
+app.use('/api/properties', propertyRoutes);
 
-app.get('/health', (_req, res) => res.json({ ok: true }));
-app.get('*', (_req, res) => res.sendFile(path.join(__dirname, '..', 'public', 'index.html')));
+// Serve frontend for all other routes (SPA)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
-app.listen(port, () => {
-  console.log(`LandIQ running on port ${port}`);
+// Init DB then start
+db.init();
+app.listen(PORT, () => {
+  console.log(`\n✅ LandIQ running at http://localhost:${PORT}\n`);
 });
