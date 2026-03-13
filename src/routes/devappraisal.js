@@ -1,99 +1,69 @@
 const express = require('express');
+
 const router = express.Router();
-const db = require('../db/database');
 
-// POST /api/devappraisal/calculate
-router.post('/calculate', (req, res) => {
-  try {
-    const result = runDevAppraisal(req.body);
-    res.json(result);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+router.post('/run', (req, res) => {
+  const gdvResidential = Number(req.body.gdvResidential || 0);
+  const units = Number(req.body.units || 0);
+  const avgUnitPrice = Number(req.body.avgUnitPrice || 0);
+  const nia = Number(req.body.nia || 0);
+  const rent = Number(req.body.rent || 0);
+  const capRate = Number(req.body.capRate || 0) / 100;
+  const buildCostPsf = Number(req.body.buildCostPsf || 0);
+  const resNia = Number(req.body.resNia || 0);
+  const contingency = Number(req.body.contingency || 0) / 100;
+  const profFees = Number(req.body.profFees || 0) / 100;
+  const marketing = Number(req.body.marketing || 0) / 100;
+  const saleAgentFee = Number(req.body.saleAgentFee || 0) / 100;
+  const landPrice = Number(req.body.landPrice || 0);
+  const sdlt = Number(req.body.sdlt || 0) / 100;
+  const otherAcq = Number(req.body.otherAcq || 0) / 100;
+  const buildRate = Number(req.body.buildRate || 0) / 100;
+  const buildPeriodMonths = Number(req.body.buildPeriodMonths || 0);
+  const salesPeriodMonths = Number(req.body.salesPeriodMonths || 0);
+  const targetProfitOnCost = Number(req.body.targetProfitOnCost || 0) / 100;
 
-// POST /api/devappraisal/save
-router.post('/save', (req, res) => {
-  const { name, inputs, outputs } = req.body;
-  if (!name) return res.status(400).json({ error: 'name required' });
-  // Store in dcf_models table reusing same structure
-  const result = db.get().prepare(
-    'INSERT INTO dcf_models (name, inputs, outputs) VALUES (?, ?, ?)'
-  ).run('[DEV] ' + name, JSON.stringify(inputs), JSON.stringify(outputs));
-  res.status(201).json({ id: result.lastInsertRowid, name });
-});
+  const derivedResGdv = gdvResidential || (units * avgUnitPrice);
+  const commercialValue = capRate > 0 ? ((nia * rent) / capRate) : 0;
+  const totalGdv = derivedResGdv + commercialValue;
 
-function runDevAppraisal(i) {
-  const {
-    // GDV
-    units = 0, avgUnitPrice = 0, commercialNIA = 0, commercialRent = 0, commercialYield = 6,
-    // Costs
-    buildCostPerSqft = 0, resNIA = 0, contingencyPct = 5,
-    professionalFeesPct = 12, marketingPct = 3, saleAgentPct = 1.5,
-    // Finance
-    landPrice = 0, sdltPct = 5, otherAcqPct = 1.5,
-    buildFinanceRatePct = 7, buildPeriodMonths = 18, salesPeriodMonths = 6,
-    // Profit
-    targetProfitOnCostPct = 20,
-  } = i;
+  const baseBuildCost = buildCostPsf * resNia;
+  const contingencyCost = baseBuildCost * contingency;
+  const profFeeCost = baseBuildCost * profFees;
+  const marketingCost = totalGdv * marketing;
+  const saleAgentCost = totalGdv * saleAgentFee;
+  const acquisitionCosts = landPrice * (sdlt + otherAcq);
+  const financeCost = (landPrice + baseBuildCost / 2) * buildRate * ((buildPeriodMonths + salesPeriodMonths) / 12);
 
-  // GDV
-  const resGDV        = units * avgUnitPrice;
-  const commercialGDV = commercialNIA > 0 ? (commercialRent * commercialNIA) / (commercialYield / 100) : 0;
-  const totalGDV      = resGDV + commercialGDV;
+  const totalCosts = landPrice + acquisitionCosts + baseBuildCost + contingencyCost + profFeeCost + marketingCost + saleAgentCost + financeCost;
+  const profit = totalGdv - totalCosts;
+  const profitOnCost = totalCosts > 0 ? profit / totalCosts : 0;
+  const profitOnGdv = totalGdv > 0 ? profit / totalGdv : 0;
+  const targetProfit = totalCosts * targetProfitOnCost;
+  const residualLandValue = totalGdv - (totalCosts - landPrice) - targetProfit;
 
-  // Build costs
-  const buildCost     = buildCostPerSqft * resNIA;
-  const contingency   = buildCost * (contingencyPct / 100);
-  const profFees      = buildCost * (professionalFeesPct / 100);
-  const totalBuild    = buildCost + contingency + profFees;
-
-  // Sales & marketing
-  const marketing     = totalGDV * (marketingPct / 100);
-  const saleAgent     = totalGDV * (saleAgentPct / 100);
-
-  // Land costs
-  const sdlt          = landPrice * (sdltPct / 100);
-  const otherAcq      = landPrice * (otherAcqPct / 100);
-  const totalLandCost = landPrice + sdlt + otherAcq;
-
-  // Finance cost (simple — interest on 60% avg drawn build cost over build period, then sales period)
-  const avgDrawn      = totalBuild * 0.6;
-  const financeRate   = buildFinanceRatePct / 100;
-  const buildFinance  = avgDrawn * financeRate * (buildPeriodMonths / 12);
-  const salesFinance  = totalBuild * financeRate * (salesPeriodMonths / 12);
-  const totalFinance  = buildFinance + salesFinance;
-
-  // Total cost
-  const totalCost     = totalBuild + marketing + saleAgent + totalLandCost + totalFinance;
-
-  // Profit & returns
-  const profit        = totalGDV - totalCost;
-  const profitOnCost  = totalCost > 0 ? (profit / totalCost) * 100 : 0;
-  const profitOnGDV   = totalGDV > 0  ? (profit / totalGDV)  * 100 : 0;
-  const targetProfit  = totalCost * (targetProfitOnCostPct / 100);
-  const residualLand  = totalGDV - totalBuild - marketing - saleAgent - totalFinance - targetProfit - (landPrice * (sdltPct + otherAcqPct) / 100);
-
-  // Viability
-  const viable = profitOnCost >= targetProfitOnCostPct;
-
-  const r = n => Math.round(n);
-  const r2 = n => Math.round(n * 100) / 100;
-
-  return {
-    inputs: i,
-    gdv: { resGDV: r(resGDV), commercialGDV: r(commercialGDV), totalGDV: r(totalGDV) },
-    costs: {
-      buildCost: r(buildCost), contingency: r(contingency), profFees: r(profFees),
-      totalBuild: r(totalBuild), marketing: r(marketing), saleAgent: r(saleAgent),
-      landPrice: r(landPrice), sdlt: r(sdlt), otherAcq: r(otherAcq),
-      totalLandCost: r(totalLandCost), totalFinance: r(totalFinance), totalCost: r(totalCost),
+  res.json({
+    summary: {
+      totalGdv,
+      commercialValue,
+      totalCosts,
+      profit,
+      profitOnCost: profitOnCost * 100,
+      profitOnGdv: profitOnGdv * 100,
+      residualLandValue,
+      targetProfit
     },
-    returns: {
-      profit: r(profit), profitOnCost: r2(profitOnCost), profitOnGDV: r2(profitOnGDV),
-      targetProfit: r(targetProfit), residualLand: r(residualLand), viable,
-    },
-  };
-}
+    costBreakdown: {
+      landPrice,
+      acquisitionCosts,
+      baseBuildCost,
+      contingencyCost,
+      profFeeCost,
+      marketingCost,
+      saleAgentCost,
+      financeCost
+    }
+  });
+});
 
 module.exports = router;

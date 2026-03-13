@@ -1,35 +1,41 @@
 const express = require('express');
 const path = require('path');
-const db = require('./db/database');
+const { init } = require('./db/database');
 
-const listingsRoutes = require('./routes/listings');
-const devAppraisalRoutes = require('./routes/devappraisal');
-const portfolioRoutes = require('./routes/portfolio');
-const pipelineRoutes = require('./routes/pipeline');
-const dcfRoutes = require('./routes/dcf');
-const propertyRoutes = require('./routes/properties');
+const listingsRoute = require('./routes/listings');
+const portfolioRoute = require('./routes/portfolio');
+const pipelineRoute = require('./routes/pipeline');
+const dcfRoute = require('./routes/dcf');
+const devAppraisalRoute = require('./routes/devAppraisal');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const port = process.env.PORT || 3000;
 
-app.use(express.json());
-app.use(express.static(path.join(__dirname, '../public')));
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
-// API routes
-app.use('/api/listings', listingsRoutes);
-app.use('/api/devappraisal', devAppraisalRoutes);
-app.use('/api/portfolio', portfolioRoutes);
-app.use('/api/pipeline', pipelineRoutes);
-app.use('/api/dcf', dcfRoutes);
-app.use('/api/properties', propertyRoutes);
+app.use('/api/listings', listingsRoute);
+app.use('/api/portfolio', portfolioRoute);
+app.use('/api/pipeline', pipelineRoute);
+app.use('/api/dcf', dcfRoute);
+app.use('/api/dev-appraisal', devAppraisalRoute);
 
-// Serve frontend for all other routes (SPA)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../public/index.html'));
+app.get('/health', (_req, res) => {
+  res.json({ ok: true });
 });
 
-// Init DB then start
-db.init();
-app.listen(PORT, () => {
-  console.log(`\n✅ LandIQ running at http://localhost:${PORT}\n`);
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));
+});
+
+init().then(() => {
+  app.listen(port, () => {
+    // eslint-disable-next-line no-console
+    console.log(`LandIQ running on http://localhost:${port}`);
+  });
+}).catch((error) => {
+  // eslint-disable-next-line no-console
+  console.error('Failed to start app', error);
+  process.exit(1);
 });
