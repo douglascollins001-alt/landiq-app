@@ -206,8 +206,10 @@ tr.tot td{border-top:1px solid var(--bdr2);font-weight:700;background:rgba(0,0,0
     </div>
     <div class="nav">
       <button class="nav-btn active" onclick="showPage('map',this)">Map</button>
+      <button class="nav-btn" onclick="showPage('listings',this)">Listings</button>
       <button class="nav-btn" onclick="showPage('portfolio',this)">Portfolio</button>
-      <button class="nav-btn" onclick="showPage('dcf',this)">DCF Model</button>
+      <button class="nav-btn" onclick="showPage('dcf',this)">Investment DCF</button>
+      <button class="nav-btn" onclick="showPage('devapp',this)">Dev Appraisal</button>
       <button class="nav-btn" onclick="showPage('pipeline',this)">Pipeline</button>
     </div>
   </div>
@@ -387,6 +389,109 @@ tr.tot td{border-top:1px solid var(--bdr2);font-weight:700;background:rgba(0,0,0
       </div>
     </div>
 
+    <!-- ══ LISTINGS PAGE ════════════════════════════════════════ -->
+    <div class="page" id="page-listings" style="flex-direction:column;overflow:hidden">
+      <div style="padding:12px 18px;border-bottom:1px solid var(--bdr);background:var(--bg2);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <div style="font-size:15px;font-weight:700;white-space:nowrap">🇬🇧 UK Property Listings</div>
+        <div id="listings-count" style="font-size:12px;color:var(--t3)"></div>
+        <div style="margin-left:auto;display:flex;gap:6px;flex-wrap:wrap">
+          <select id="f-type" onchange="filterListings()" style="width:130px"><option value="all">All Types</option><option value="land">Land</option><option value="commercial">Commercial</option><option value="residential">Residential</option><option value="mixed">Mixed Use</option></select>
+          <select id="f-region" onchange="filterListings()" style="width:140px"><option value="">All Regions</option></select>
+          <select id="f-agent" onchange="filterListings()" style="width:150px"><option value="">All Agents</option></select>
+          <select id="f-yield" onchange="filterListings()" style="width:130px"><option value="">Any Yield</option><option value="5">5%+ NIY</option><option value="6">6%+ NIY</option><option value="7">7%+ NIY</option><option value="8">8%+ NIY</option></select>
+          <select id="f-price" onchange="filterListings()" style="width:140px"><option value="">Any Price</option><option value="0,1000000">Under £1m</option><option value="0,5000000">Under £5m</option><option value="0,10000000">Under £10m</option><option value="5000000,999999999">£5m+</option><option value="10000000,999999999">£10m+</option></select>
+          <div style="position:relative"><span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px">⌕</span><input type="text" id="f-search" placeholder="Search listings…" style="padding-left:28px;width:200px" oninput="filterListings()"></div>
+        </div>
+      </div>
+      <div id="listings-kpis" style="display:flex;gap:0;border-bottom:1px solid var(--bdr);background:var(--bg3)"></div>
+      <div style="flex:1;display:flex;overflow:hidden">
+        <div style="flex:1;overflow-y:auto;padding:16px">
+          <div id="listings-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px"></div>
+        </div>
+        <div id="listing-detail" style="width:360px;flex-shrink:0;background:var(--bg2);border-left:1px solid var(--bdr);overflow-y:auto;display:flex;align-items:center;justify-content:center">
+          <div style="text-align:center;color:var(--t3);padding:30px">
+            <div style="font-size:36px;opacity:.2;margin-bottom:10px">🏢</div>
+            <div style="font-size:13px;color:var(--t2);font-weight:600">Select a listing</div>
+            <div style="font-size:11px;margin-top:6px">Click any card to view full details</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ DEV APPRAISAL PAGE ══════════════════════════════════════ -->
+    <div class="page" id="page-devapp" style="flex-direction:row">
+      <!-- Inputs sidebar -->
+      <div class="dcf-sidebar" style="width:300px;overflow-y:auto;padding:16px">
+        <div style="font-size:15px;font-weight:700;margin-bottom:18px;display:flex;align-items:center;gap:8px"><span style="color:var(--amber)">🏗</span> Development Appraisal</div>
+
+        <div class="dcf-section">
+          <div class="dcf-sec-lbl">GDV — Residential</div>
+          <div class="row2">
+            <div class="field"><label>No. of Units</label><input type="number" id="da-units" value="45"></div>
+            <div class="field"><label>Avg Unit Price (£)</label><input type="number" id="da-unitprice" value="285000"></div>
+          </div>
+        </div>
+
+        <div class="dcf-section">
+          <div class="dcf-sec-lbl">GDV — Commercial (optional)</div>
+          <div class="row2">
+            <div class="field"><label>NIA (sqft)</label><input type="number" id="da-comnia" value="0"></div>
+            <div class="field"><label>Rent (£/sqft/yr)</label><input type="number" id="da-comrent" value="0"></div>
+          </div>
+          <div class="field"><label>Cap Rate (%)</label><input type="number" id="da-comyield" value="6" step="0.1"></div>
+        </div>
+
+        <div class="dcf-section">
+          <div class="dcf-sec-lbl">Build Costs</div>
+          <div class="row2">
+            <div class="field"><label>Build Cost (£/sqft)</label><input type="number" id="da-buildcost" value="180"></div>
+            <div class="field"><label>Res NIA (sqft)</label><input type="number" id="da-resnia" value="32400"></div>
+          </div>
+          <div class="row3">
+            <div class="field"><label>Contingency (%)</label><input type="number" id="da-contingency" value="5" step="0.5"></div>
+            <div class="field"><label>Prof Fees (%)</label><input type="number" id="da-proffees" value="12" step="0.5"></div>
+            <div class="field"><label>Marketing (%)</label><input type="number" id="da-marketing" value="3" step="0.5"></div>
+          </div>
+          <div class="field"><label>Sale Agent Fee (%)</label><input type="number" id="da-salesagent" value="1.5" step="0.25"></div>
+        </div>
+
+        <div class="dcf-section">
+          <div class="dcf-sec-lbl">Land</div>
+          <div class="field"><label>Land Price (£)</label><input type="number" id="da-land" value="2100000"></div>
+          <div class="row2">
+            <div class="field"><label>SDLT (%)</label><input type="number" id="da-sdlt" value="5" step="0.5"></div>
+            <div class="field"><label>Other Acq (%)</label><input type="number" id="da-acq" value="1.5" step="0.25"></div>
+          </div>
+        </div>
+
+        <div class="dcf-section">
+          <div class="dcf-sec-lbl">Finance</div>
+          <div class="row2">
+            <div class="field"><label>Build Rate (%)</label><input type="number" id="da-finrate" value="7" step="0.25"></div>
+            <div class="field"><label>Build Period (mths)</label><input type="number" id="da-buildmths" value="18"></div>
+          </div>
+          <div class="field"><label>Sales Period (mths)</label><input type="number" id="da-salesmths" value="6"></div>
+        </div>
+
+        <div class="dcf-section">
+          <div class="dcf-sec-lbl">Profit Target</div>
+          <div class="field"><label>Target Profit on Cost (%)</label><input type="number" id="da-target" value="20" step="1"></div>
+        </div>
+
+        <button class="btn btn-primary" style="width:100%;background:var(--amber);border-color:var(--amber)" onclick="runDevAppraisal()">Run Appraisal</button>
+        <button class="btn btn-outline" style="width:100%;margin-top:6px" onclick="loadListingIntoDevApp()">Load from Listing</button>
+      </div>
+
+      <!-- Results -->
+      <div class="dcf-main" id="devapp-main">
+        <div style="display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:12px;color:var(--t3)">
+          <div style="font-size:40px;opacity:.2">🏗</div>
+          <div style="font-size:14px;color:var(--t2);font-weight:600">Enter inputs and click Run Appraisal</div>
+          <div style="font-size:12px">Calculates GDV, total costs, profit on cost, profit on GDV and residual land value</div>
+        </div>
+      </div>
+    </div>
+
     <!-- ══ PIPELINE PAGE ════════════════════════════════════════ -->
     <div class="page" id="page-pipeline">
       <div class="pipe-topbar">
@@ -430,6 +535,8 @@ function showPage(id, btn) {
   if (btn) btn.classList.add('active');
   if (id === 'portfolio') loadPortfolio();
   if (id === 'pipeline') loadPipeline();
+  if (id === 'listings') loadListings();
+  if (id === 'devapp' && document.getElementById('devapp-main').children.length && document.getElementById('devapp-main').children[0].querySelector) {}
 }
 
 // ── HELPERS ───────────────────────────────────────────────────────

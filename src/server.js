@@ -2,6 +2,8 @@ const express = require('express');
 const path = require('path');
 const db = require('./db/database');
 
+const listingsRoutes = require('./routes/listings');
+const devAppraisalRoutes = require('./routes/devappraisal');
 const portfolioRoutes = require('./routes/portfolio');
 const pipelineRoutes = require('./routes/pipeline');
 const dcfRoutes = require('./routes/dcf');
@@ -14,6 +16,8 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, '../public')));
 
 // API routes
+app.use('/api/listings', listingsRoutes);
+app.use('/api/devappraisal', devAppraisalRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/pipeline', pipelineRoutes);
 app.use('/api/dcf', dcfRoutes);
