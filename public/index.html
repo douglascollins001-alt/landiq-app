@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LandIQ — UK Property Intelligence</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -237,60 +239,14 @@ tr.tot td{border-top:1px solid var(--bdr2);font-weight:700;background:rgba(0,0,0
 
       <!-- Center: map -->
       <div class="map-center">
-        <svg class="map-svg" id="map-svg" viewBox="0 0 800 600">
-          <defs>
-            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-              <path d="M40 0L0 0 0 40" fill="none" stroke="rgba(255,255,255,.025)" stroke-width="1"/>
-            </pattern>
-          </defs>
-          <rect width="800" height="600" fill="#0a1520"/>
-          <rect width="800" height="600" fill="url(#grid)"/>
-          <!-- Thames -->
-          <path d="M0 340 Q100 330 200 345 Q300 360 400 350 Q500 340 600 355 Q700 365 800 355" fill="none" stroke="#1a3a5c" stroke-width="24" stroke-linecap="round"/>
-          <path d="M0 340 Q100 330 200 345 Q300 360 400 350 Q500 340 600 355 Q700 365 800 355" fill="none" stroke="#0d2b45" stroke-width="18" stroke-linecap="round"/>
-          <text x="360" y="358" fill="#1a4a6e" font-size="10" font-family="system-ui" text-anchor="middle" font-weight="600" letter-spacing="2">THAMES</text>
-          <!-- Roads -->
-          <line x1="0" y1="200" x2="800" y2="200" stroke="rgba(255,255,255,.055)" stroke-width="2.5"/>
-          <line x1="0" y1="420" x2="800" y2="420" stroke="rgba(255,255,255,.055)" stroke-width="2.5"/>
-          <line x1="200" y1="0" x2="200" y2="600" stroke="rgba(255,255,255,.055)" stroke-width="2.5"/>
-          <line x1="400" y1="0" x2="400" y2="600" stroke="rgba(255,255,255,.055)" stroke-width="2.5"/>
-          <line x1="600" y1="0" x2="600" y2="600" stroke="rgba(255,255,255,.055)" stroke-width="2.5"/>
-          <line x1="0" y1="100" x2="800" y2="100" stroke="rgba(255,255,255,.025)" stroke-width="1"/>
-          <line x1="0" y1="300" x2="800" y2="300" stroke="rgba(255,255,255,.025)" stroke-width="1"/>
-          <line x1="0" y1="500" x2="800" y2="500" stroke="rgba(255,255,255,.025)" stroke-width="1"/>
-          <line x1="100" y1="0" x2="100" y2="600" stroke="rgba(255,255,255,.025)" stroke-width="1"/>
-          <line x1="300" y1="0" x2="300" y2="600" stroke="rgba(255,255,255,.025)" stroke-width="1"/>
-          <line x1="500" y1="0" x2="500" y2="600" stroke="rgba(255,255,255,.025)" stroke-width="1"/>
-          <line x1="700" y1="0" x2="700" y2="600" stroke="rgba(255,255,255,.025)" stroke-width="1"/>
-          <!-- Blocks -->
-          <rect x="230" y="155" width="70" height="35" rx="3" fill="rgba(255,255,255,.04)"/>
-          <rect x="330" y="240" width="60" height="40" rx="3" fill="rgba(255,255,255,.05)"/>
-          <rect x="455" y="248" width="50" height="35" rx="3" fill="rgba(255,255,255,.04)"/>
-          <rect x="565" y="140" width="70" height="45" rx="3" fill="rgba(255,255,255,.04)"/>
-          <rect x="225" y="438" width="60" height="35" rx="3" fill="rgba(255,255,255,.03)"/>
-          <rect x="530" y="428" width="80" height="40" rx="3" fill="rgba(255,255,255,.03)"/>
-          <!-- Area labels -->
-          <text x="395" y="188" fill="rgba(255,255,255,.12)" font-size="9" font-family="system-ui" text-anchor="middle" letter-spacing="2" font-weight="700">CITY OF LONDON</text>
-          <text x="200" y="265" fill="rgba(255,255,255,.09)" font-size="9" font-family="system-ui" text-anchor="middle" letter-spacing="2">SOHO</text>
-          <text x="588" y="218" fill="rgba(255,255,255,.09)" font-size="9" font-family="system-ui" text-anchor="middle" letter-spacing="2">CANARY WHARF</text>
-          <text x="290" y="452" fill="rgba(255,255,255,.09)" font-size="9" font-family="system-ui" text-anchor="middle" letter-spacing="2">SOUTHWARK</text>
-          <text x="295" y="130" fill="rgba(255,255,255,.09)" font-size="9" font-family="system-ui" text-anchor="middle" letter-spacing="2">KING'S CROSS</text>
-          <!-- Zone rings -->
-          <circle cx="390" cy="290" r="80" fill="none" stroke="rgba(46,204,155,.05)" stroke-width="1" stroke-dasharray="3 4"/>
-          <circle cx="390" cy="290" r="160" fill="none" stroke="rgba(46,204,155,.04)" stroke-width="1" stroke-dasharray="3 4"/>
-          <!-- Pins layer -->
-          <g id="pins-layer"></g>
-        </svg>
-        <div class="map-controls">
-          <div class="map-ctrl-btn" title="Zoom in">+</div>
-          <div class="map-ctrl-btn" title="Zoom out">−</div>
-        </div>
+        <div id="leaflet-map" style="width:100%;height:100%"></div>
         <!-- Legend -->
-        <div style="position:absolute;bottom:12px;left:12px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--r2);padding:8px 12px;display:flex;gap:12px;align-items:center">
+        <div style="position:absolute;bottom:30px;left:12px;background:var(--bg2);border:1px solid var(--bdr2);border-radius:var(--r2);padding:8px 12px;display:flex;gap:12px;align-items:center;z-index:1000">
           <span style="width:10px;height:10px;border-radius:50%;background:#3498db;display:inline-block"></span><span style="font-size:10px;color:var(--t3)">Commercial</span>
           <span style="width:10px;height:10px;border-radius:50%;background:#2ecc9b;display:inline-block"></span><span style="font-size:10px;color:var(--t3)">Residential</span>
           <span style="width:10px;height:10px;border-radius:50%;background:#f5a623;display:inline-block"></span><span style="font-size:10px;color:var(--t3)">Land</span>
           <span style="width:10px;height:10px;border-radius:50%;background:#9b59b6;display:inline-block"></span><span style="font-size:10px;color:var(--t3)">Industrial</span>
+          <span style="width:10px;height:10px;border-radius:50%;background:#e74c3c;display:inline-block"></span><span style="font-size:10px;color:var(--t3)">Mixed</span>
         </div>
       </div>
 
@@ -550,15 +506,44 @@ const scoreColor = s => s >= 85 ? '#2ecc9b' : s >= 70 ? '#f5a623' : '#e74c3c';
 const typeColor = t => ({ commercial: '#3498db', residential: '#2ecc9b', land: '#f5a623', industrial: '#9b59b6' })[t] || '#8fa3b1';
 
 // ── MAP / PROPERTIES ──────────────────────────────────────────────
-const PIN_POSITIONS = { 1:{x:380,y:225}, 2:{x:435,y:432}, 3:{x:245,y:258}, 4:{x:602,y:242}, 5:{x:305,y:135} };
+let leafletMap = null;
+let leafletMarkers = [];
 
 async function loadProperties() {
   try {
     const res = await fetch('/api/properties');
     properties = await res.json();
     renderPropList(properties);
-    renderPins(properties);
+    initLeafletMap(properties);
   } catch(e) { console.error('Failed to load properties', e); }
+}
+
+function initLeafletMap(props) {
+  if (leafletMap) { renderLeafletPins(props); return; }
+  leafletMap = L.map('leaflet-map', { zoomControl: true, attributionControl: true }).setView([54.5, -2.5], 6);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap © CARTO', subdomains: 'abcd', maxZoom: 19
+  }).addTo(leafletMap);
+  renderLeafletPins(props);
+  // Fix map size after render
+  setTimeout(() => leafletMap.invalidateSize(), 100);
+}
+
+function renderLeafletPins(props) {
+  leafletMarkers.forEach(m => leafletMap.removeLayer(m));
+  leafletMarkers = [];
+  props.filter(p => p.lat && p.lng).forEach(p => {
+    const col = typeColor(p.type);
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:${col};width:32px;height:32px;border-radius:50%;border:2px solid rgba(255,255,255,0.8);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;font-family:monospace;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,0.4)">${p.score}</div>`,
+      iconSize: [32, 32], iconAnchor: [16, 16]
+    });
+    const marker = L.marker([p.lat, p.lng], { icon }).addTo(leafletMap);
+    marker.on('click', () => selectProp(p.id));
+    marker.bindTooltip(`<b>${p.title}</b><br>${p.address}<br>${fmtK(p.price)}`, { direction: 'top', offset: [0, -16] });
+    leafletMarkers.push(marker);
+  });
 }
 
 function filterProps(q) {
@@ -569,7 +554,7 @@ function filterProps(q) {
     return p.title.toLowerCase().includes(qL) || p.address.toLowerCase().includes(qL) || p.postcode.toLowerCase().includes(qL) || (p.titleNum||'').toLowerCase().includes(qL);
   });
   renderPropList(filtered);
-  renderPins(filtered);
+  renderLeafletPins(filtered);
 }
 
 function toggleChip(el) {
@@ -602,25 +587,13 @@ function renderPropList(props) {
     </div>`).join('');
 }
 
-function renderPins(props) {
-  const layer = document.getElementById('pins-layer');
-  layer.innerHTML = props.map(p => {
-    const pos = PIN_POSITIONS[p.id] || { x: 400, y: 300 };
-    const col = typeColor(p.type);
-    const sel = selectedProp && selectedProp.id === p.id;
-    return `
-      <g style="cursor:pointer" onclick="selectProp(${p.id})">
-        <circle cx="${pos.x}" cy="${pos.y}" r="${sel?14:9}" fill="${col}" opacity="${sel?1:.85}" stroke="${sel?'#fff':'transparent'}" stroke-width="${sel?2:0}"/>
-        <circle cx="${pos.x}" cy="${pos.y}" r="${sel?20:14}" fill="${col}" opacity=".12"/>
-        <text x="${pos.x}" y="${pos.y+4}" text-anchor="middle" font-size="8" font-family="'SF Mono',monospace" fill="#fff" font-weight="700">${p.score}</text>
-      </g>`;
-  }).join('');
-}
-
 async function selectProp(id) {
   selectedProp = properties.find(p => p.id === id);
   renderPropList(properties.filter(p => activeFilters.has(p.type)));
-  renderPins(properties.filter(p => activeFilters.has(p.type)));
+  renderLeafletPins(properties.filter(p => activeFilters.has(p.type)));
+  if (selectedProp && selectedProp.lat && leafletMap) {
+    leafletMap.setView([selectedProp.lat, selectedProp.lng], 14, { animate: true });
+  }
   renderDetail(selectedProp, 'title');
 }
 
