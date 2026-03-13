@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>LandIQ — UK Property Intelligence</title>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAh25unbP8IoDOUWpsF_n8VptIB8mG_cew&libraries=places,geometry" defer></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>if(typeof pdfjsLib!=='undefined')pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -226,6 +228,14 @@ tr.tot td{border-top:1px solid var(--bdr2);font-weight:700;background:rgba(0,0,0
             <span class="search-icon">⌕</span>
             <input type="text" id="map-search" placeholder="Filter properties…" oninput="filterProps(this.value)">
           </div>
+        </div>
+        <!-- Address search -->
+        <div style="padding:8px 12px;border-bottom:1px solid var(--bdr)">
+          <div style="position:relative">
+            <span style="position:absolute;left:9px;top:50%;transform:translateY(-50%);color:var(--t3);font-size:13px">📍</span>
+            <input type="text" id="map-address-search" placeholder="Go to address or postcode…" style="padding-left:28px;width:100%;font-size:12px" oninput="handleAddressSearch(this.value)" onkeydown="if(event.key==='Enter')jumpToAddress()">
+          </div>
+          <div id="address-suggestions" style="position:absolute;z-index:2000;background:var(--bg2);border:1px solid var(--bdr);border-radius:6px;max-height:160px;overflow-y:auto;width:260px;display:none"></div>
         </div>
         <div class="filter-bar" id="filter-bar">
           <span class="chip on" data-f="commercial" onclick="toggleChip(this)">Commercial</span>
@@ -568,17 +578,24 @@ function initGoogleMaps() {
 
   gInfoWindow = new google.maps.InfoWindow();
 
-  // Add search box
-  const searchInput = document.createElement('input');
-  searchInput.placeholder = 'Search UK address or postcode…';
-  searchInput.style.cssText = 'margin:10px;padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:#152235;color:#e8ecf0;font-size:13px;width:280px;outline:none;font-family:inherit';
-  gMap.controls[google.maps.ControlPosition.TOP_LEFT].push(searchInput);
-  const autocomplete = new google.maps.places.Autocomplete(searchInput, { componentRestrictions: { country: 'gb' } });
-  autocomplete.bindTo('bounds', gMap);
-  autocomplete.addListener('place_changed', () => {
-    const place = autocomplete.getPlace();
-    if (place.geometry) { gMap.setCenter(place.geometry.location); gMap.setZoom(15); }
-  });
+  // Wire up sidebar address search input
+  const sidebarSearch = document.getElementById('map-address-search');
+  if (sidebarSearch) {
+    const sidebarAC = new google.maps.places.Autocomplete(sidebarSearch, {
+      componentRestrictions: { country: 'gb' },
+      fields: ['geometry', 'formatted_address', 'name'],
+    });
+    sidebarAC.addListener('place_changed', () => {
+      const place = sidebarAC.getPlace();
+      if (place.geometry) {
+        gMap.panTo(place.geometry.location);
+        gMap.setZoom(16);
+        gInfoWindow.setContent('<div style="color:#0d1b2a;font-size:12px;font-weight:600;padding:4px">' + (place.name || place.formatted_address) + '</div>');
+        gInfoWindow.setPosition(place.geometry.location);
+        gInfoWindow.open(gMap);
+      }
+    });
+  }
 
   // Layer toggle buttons
   const layerDiv = document.createElement('div');
@@ -713,6 +730,26 @@ function toggleFloodLayer(btn) {
     tileSize: new google.maps.Size(256, 256), name: 'Flood Risk', maxZoom: 20, minZoom: 0, opacity: 0.5,
   });
   gMap.overlayMapTypes.push(floodLayer);
+}
+
+function handleAddressSearch(v) {
+  // Google Places Autocomplete handles suggestions via the Autocomplete widget
+  // This is just a fallback for manual typing + Enter
+}
+
+function jumpToAddress() {
+  const val = document.getElementById('map-address-search').value.trim();
+  if (!val || !gMap) return;
+  const geocoder = new google.maps.Geocoder();
+  geocoder.geocode({ address: val + ', UK' }, (results, status) => {
+    if (status === 'OK' && results[0]) {
+      gMap.panTo(results[0].geometry.location);
+      gMap.setZoom(16);
+      gInfoWindow.setContent('<div style="color:#0d1b2a;font-size:12px;font-weight:600;padding:4px">' + results[0].formatted_address + '</div>');
+      gInfoWindow.setPosition(results[0].geometry.location);
+      gInfoWindow.open(gMap);
+    }
+  });
 }
 
 function filterProps(q) {
@@ -1284,8 +1321,8 @@ async function loadListings() {
 }
 
 function populateListingFilters(summary) {
-  const regionSel = document.getElementById('ls-region');
-  const agentSel = document.getElementById('ls-agent');
+  const regionSel = document.getElementById('f-region');
+  const agentSel = document.getElementById('f-agent');
   if (regionSel && !regionSel.children.length) {
     ['All Regions', ...summary.regions].forEach((r,i) => {
       const o = document.createElement('option'); o.value = i===0?'':r; o.textContent = r; regionSel.appendChild(o);
@@ -1299,11 +1336,11 @@ function populateListingFilters(summary) {
 }
 
 function filterListings() {
-  const type   = document.getElementById('ls-type')?.value || 'all';
-  const region = document.getElementById('ls-region')?.value || '';
-  const agent  = document.getElementById('ls-agent')?.value || '';
-  const minYield = document.getElementById('ls-yield')?.value || '';
-  const q      = document.getElementById('ls-q')?.value || '';
+  const type   = document.getElementById('f-type')?.value || 'all';
+  const region = document.getElementById('f-region')?.value || '';
+  const agent  = document.getElementById('f-agent')?.value || '';
+  const minYield = document.getElementById('f-yield')?.value || '';
+  const q      = document.getElementById('f-search')?.value || '';
   let r = allListings;
   if (type !== 'all') r = r.filter(l => l.type === type);
   if (region) r = r.filter(l => l.region === region);
@@ -1503,13 +1540,38 @@ async function handleDAFile(file) {
   }
 }
 
-function readFileAsText(file) {
+async function readFileAsText(file) {
+  if (file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')) {
+    return await extractPDFText(file);
+  }
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = e => resolve(e.target.result);
     reader.onerror = reject;
     reader.readAsText(file);
   });
+}
+
+async function extractPDFText(file) {
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    let text = '';
+    for (let i = 1; i <= Math.min(pdf.numPages, 15); i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      text += content.items.map(item => item.str).join(' ') + '\n';
+    }
+    return text || 'Could not extract text from PDF';
+  } catch(e) {
+    console.warn('PDF.js failed, trying text fallback', e);
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result);
+      reader.onerror = reject;
+      reader.readAsText(file);
+    });
+  }
 }
 
 async function extractDealDataWithAI(text, mode) {
